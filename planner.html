@@ -4,48 +4,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>The RM Planner</title>
-  <link rel="stylesheet" href="./style.css">
-  <link rel="icon" href="./RMfavicon.png" type="image/x-icon">
+  <title>Daily Schedule</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="planner.css">
 </head>
 
 <body>
-  <header>
-    <div>
-      <h1>RM Planner - Planner</h1>
-    </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="login.html">Login</a>
-      <a href="planner.html">Planner</a>
-    </nav>
-  </header>
 
-  <main>
-    <h2>Here's the meat of the app</h2>
-    <h3>Or at least, here's where it'll one day go.</h3>
-    <p>Current Users: 1 (Websocket!)</p>
-    <p>This is what it will look like, but cooler:</p>
-    <img src="CS260MockUp.png" alt="What the planner will look like" width="100%" />
-    <p>There will be database stuff here to store people's schedules.</p>
+  <!-- This had better look better once we have Javascript... -->
+  <div class="container">
+    <h2>Weekly Schedule</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Monday</th>
+          <th>Tuesday</th>
+          <th>Wednesday</th>
+          <th>Thursday</th>
+          <th>Friday</th>
+          <th>Saturday</th>
+          <th>Sunday</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Repeat for each time slot -->
+        <tr>
+          <td>9:00 - 10:00</td>
+          <td>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">CSS 260</h5>
+                <p class="card-text">JKB 2113</p>
+                <p class="card-text"><small class="text-muted">9:00 - 10:00 AM</small></p>
+              </div>
+            </div>
+          </td>
+          <td>Event 2</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>10:00 - 11:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>11:00 - 12:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>12:00 - 1:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Lunch</h5>
+                <p class="card-text">With a hot girl</p>
+                <p class="card-text"><small class="text-muted">12:00 - 1:00 AM</small></p>
+              </div>
+            </div>
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>1:00 - 2:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>2:00 - 3:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>3:00 - 4:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>4:00 - 5:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>5:00 - 6:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>6:00 - 7:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>7:00 - 8:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>8:00 - 9:00</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <form action="chat.html" method="post">
-      <label for="ta">Talk with GPT: </label>
-      <textarea id="ta" name="ta-id">
-GPT API: coming soon
-          </textarea>
-      <button type="submit">Submit</button>
-    </form>
+
+  <!-- Floating Action Button -->
+  <div class="fab">+</div>
 
 
-  </main>
-  <footer>
-    <br><br><br>
-    <p>Created by: The RM Planner Team (Just Ammon)</p>
-    <a href="https://github.com/ammonwk/startup">The Github Repository</a>
-  </footer>
-  <script src="index.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 
 </html>

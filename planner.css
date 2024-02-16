@@ -1,0 +1,66 @@
+.container {
+    margin-top: 20px;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6 !important;
+}
+
+th {
+    background-color: #f8f9fa;
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+
+/* Highlight current day */
+.today {
+    background-color: #d3d3d3;
+}
+
+.card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .2);
+    border-radius: 8px;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    /* 20px */
+}
+
+.card-text {
+    font-size: 0.875rem;
+    /* 14px */
+}
+
+.fab {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #007bff;
+    /* Bootstrap primary color */
+    color: white;
+    padding: 15px;
+    border-radius: 50%;
+    font-size: 2.5rem;
+    /* 40px */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* Hover effect for the card */
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+}
+
+/* Responsive column layout for the days */
+@media (max-width: 768px) {
+    .col {
+        margin-bottom: 1rem;
+    }
+}
