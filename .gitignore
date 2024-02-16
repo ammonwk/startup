@@ -1,1 +1,3 @@
 .gitignore
+deployFiles.sh
+startup.code-workspace
