@@ -30,3 +30,11 @@ body {
     background-position: top;
     background-repeat: no-repeat;
 }
+
+#mb-6 {
+    margin-bottom: 3em;
+}
+
+#pad-top {
+    padding-top: 30px;
+}
