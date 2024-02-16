@@ -11,6 +11,23 @@
 
 <body>
 
+  <header>
+    <!-- Menu Bar: Home, Login, Planner -->
+
+    <div class="container-fluid">
+      <div class="d-flex flex-column flex-sm-row align-items-center p-3 px-sm-4 mb-3 bg-white border-bottom shadow-sm">
+        <h5 class="my-0 mr-sm-auto font-weight-normal">RM Planner</h5>
+        <nav class="my-2 my-md-0 mr-md-3">
+          <a class="p-2 text-dark " href="index.html">Home</a>
+          <a class="p-2 text-dark" href="planner.html">Planner</a>
+          <a class="p-2 text-dark" href="login.html">Login</a>
+        </nav>
+        <a class="btn btn-outline-primary" href="login.html">Sign up</a>
+      </div>
+    </div>
+  </header>
+
+
   <!-- This had better look better once we have Javascript... -->
   <div class="container">
     <h2>Weekly Schedule</h2>
@@ -40,10 +57,26 @@
               </div>
             </div>
           </td>
-          <td>Event 2</td>
           <td></td>
+          <td>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">CSS 260</h5>
+                <p class="card-text">JKB 2113</p>
+                <p class="card-text"><small class="text-muted">9:00 - 10:00 AM</small></p>
+              </div>
+            </div>
+          </td>
           <td></td>
-          <td></td>
+          <td>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">CSS 260</h5>
+                <p class="card-text">JKB 2113</p>
+                <p class="card-text"><small class="text-muted">9:00 - 10:00 AM</small></p>
+              </div>
+            </div>
+          </td>
           <td></td>
           <td></td>
         </tr>
@@ -170,8 +203,22 @@
   </div>
 
 
-  <!-- Floating Action Button -->
-  <div class="fab">+</div>
+  <footer class="mt-auto bg-light d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+    <ul class="nav">
+      <li class="mb-0 p-2 text-muted">© 2024 Ammon Kunzler</li>
+      <li class="mb-0 p-0 text-muted nav-item"><a href="https://github.com/ammonwk/startup" target="_blank"
+          class="nav-link px-2 text-muted">Github</a></li>
+    </ul>
+
+
+    <ul class="nav">
+      <li class="nav-item"><a href="index.html" class="nav-link px-2 text-muted">Home</a></li>
+      <li class="nav-item"><a href="planner.html" class="nav-link px-2 text-muted">Planner</a></li>
+      <li class="nav-item"><a href="login.html" class="nav-link px-2 text-muted">Login</a></li>
+      <li class="nav-item"><a href="#" class="nav-link px-2 text-muted">About</a></li>
+    </ul>
+  </footer>
+
 
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
