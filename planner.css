@@ -1,66 +1,71 @@
-.container {
-    margin-top: 20px;
+body,
+html {
+    height: 100%;
+    margin: 0;
 }
 
-.table-bordered th,
-.table-bordered td {
-    border: 1px solid #dee2e6 !important;
+#schedule-container {
+    display: flex;
+    height: 100%;
 }
 
-th {
-    background-color: #f8f9fa;
-    text-align: center;
+#time-sidebar {
+    width: 65px;
+    /* Adjust as needed */
+    background-color: #f0f0f0;
+    overflow: auto;
+    text-align: right;
+    margin-left: auto;
+    margin-right: 0;
 }
 
-td {
-    text-align: center;
+.time-block {
+    padding: 5px 10px;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
 }
 
-/* Highlight current day */
-.today {
-    background-color: #d3d3d3;
+#events-container {
+    flex-grow: 1;
+    background-color: #fff;
+    position: relative;
+    overflow: auto;
+    padding: 20px;
 }
 
-.card {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, .2);
-    border-radius: 8px;
+.event {
+    position: absolute;
+    min-width: 100px;
+    min-height: 30px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: move;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-.card-title {
-    font-size: 1.25rem;
-    /* 20px */
+
+
+
+/* Add styling for resizing handles if needed 
+.event::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #ccc;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 2px;
+    cursor: se-resize;
+} */
+
+/* Style for the active dragging event */
+.dragging {
+    z-index: 1000;
+    box-shadow: -2px 5px 5px rgba(0, 0, 0, 0.2);
 }
 
-.card-text {
-    font-size: 0.875rem;
-    /* 14px */
-}
-
-.fab {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background-color: #007bff;
-    /* Bootstrap primary color */
-    color: white;
-    padding: 15px;
-    border-radius: 50%;
-    font-size: 2.5rem;
-    /* 40px */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
-    cursor: pointer;
-    z-index: 10;
-}
-
-/* Hover effect for the card */
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
-}
-
-/* Responsive column layout for the days */
-@media (max-width: 768px) {
-    .col {
-        margin-bottom: 1rem;
-    }
-}
+/* You can add more specific styles for event colors, typography, etc. */
