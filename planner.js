@@ -1,14 +1,13 @@
 events = {};
 nextID = -1;
-loadEventsFromLocalStorage();
 generateTimeSidebar();
+loadEventsFromLocalStorage();
 setupEventListeners();
 
 
 // Utility functions
 function saveToLocalStorage() {
     localStorage.setItem('events', JSON.stringify(events));
-    console.log("Events saved to local storage");
 }
 
 function clearLocalStorage() {
@@ -16,7 +15,6 @@ function clearLocalStorage() {
     events = {};
     nextID = -1;
     document.getElementById('events-container').innerHTML = '';
-    console.log("Events cleared from local storage");
 }
 
 function loadEventsFromLocalStorage() {
@@ -25,7 +23,6 @@ function loadEventsFromLocalStorage() {
         events = JSON.parse(storedEvents);
         nextID = Math.max(-1, ...Object.keys(events).map(Number));
         Object.values(events).forEach(event => displayEvent(event));
-        console.log("Events loaded from local storage");
     }
 }
 
@@ -41,20 +38,21 @@ function generateTimeSidebar() {
 }
 
 function displayEvent(event) {
-    const eventElement = createEventElement(event.id, event.name, event.x, event.y);
-    snapToClosestTimeBlock(eventElement);
+    const eventElement = createEventElement(event.id, event.name, event.x, event.hour);
     document.getElementById('events-container').appendChild(eventElement);
 }
 
 
-function createEventElement(id = ++nextID, name = 'New Event', x = 0, y = 0) {
+function createEventElement(id = ++nextID, name = 'New Event', x = 0, hour = 8) {
     const eventElement = document.createElement('div');
     eventElement.className = 'event';
     eventElement.textContent = name;
     eventElement.style.left = x;
-    eventElement.style.top = y;
+    hourBox = document.querySelector(`[data-time="${hour}"]`);
+    const containerRect = document.getElementById('events-container').getBoundingClientRect();
+    const adjustedTop = hourBox.getBoundingClientRect().top - containerRect.top + document.getElementById('events-container').scrollTop - document.body.scrollTop;
+    eventElement.style.top = `${adjustedTop}px`;
     eventElement.setAttribute('id', id);
-    snapToClosestTimeBlock(eventElement);
     return eventElement;
 }
 
@@ -72,9 +70,8 @@ function onContainerClick(e) {
         newEvent.style.left = `${x}px`;
         newEvent.style.top = `${y}px`;
         e.currentTarget.appendChild(newEvent);
-
-        snapToClosestTimeBlock(newEvent);
-        events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${x}px`, y: `${y}px` };
+        events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${x}px` };
+        snapToClosestTimeBlock(newEvent); // Also sets event.hour
         saveToLocalStorage();
     }
 }
@@ -97,6 +94,7 @@ function onDrag(e) {
         let newX = e.clientX - containerRect.left - startX;
         let newY = e.clientY - containerRect.top - startY;
 
+        // Bind event to the container
         newX = Math.max(0, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
         newY = Math.max(0, Math.min(newY, containerRect.height - draggedElement.offsetHeight));
 
@@ -110,11 +108,10 @@ function onDragEnd() {
         const id = draggedElement.getAttribute('id');
         if (id && events[id]) {
             events[id].x = draggedElement.style.left;
-            events[id].y = draggedElement.style.top;
-            saveToLocalStorage();
         }
         draggedElement.classList.remove("dragging");
         snapToClosestTimeBlock(draggedElement);
+        saveToLocalStorage();
         draggedElement = null;
     }
 }
@@ -134,11 +131,11 @@ function snapToClosestTimeBlock(eventElement) {
     let closest = null;
     let closestDist = Infinity;
     const eventRect = eventElement.getBoundingClientRect();
-    const eventTop = eventElement.style.top.substring(0, eventElement.style.top.length - 2);
+    const containerRect = document.getElementById('events-container').getBoundingClientRect();
 
     Array.from(timeBlocks).forEach(block => {
-        const blockRect = block.getBoundingClientRect().top;
-        const dist = Math.abs(blockRect - eventRect.top);
+        const blockRect = block.getBoundingClientRect();
+        const dist = Math.abs(blockRect.top - eventRect.top);
         if (dist < closestDist) {
             closest = block;
             closestDist = dist;
@@ -146,9 +143,10 @@ function snapToClosestTimeBlock(eventElement) {
     });
 
     if (closest) {
-        const closestRect = closest.getBoundingClientRect();
-        // getBoundingClientRect and style.top are offset, so we need to convert
-        const offset = eventRect.top - eventTop;
-        eventElement.style.top = `${closestRect.top - offset}px`;
+        // Adjust position to be relative to the container, not the viewport
+        // Is there an easier way to do this? Jquery has offset(), but that wouldn't combine with React
+        const adjustedTop = closest.getBoundingClientRect().top - containerRect.top + document.getElementById('events-container').scrollTop - document.body.scrollTop;
+        eventElement.style.top = `${adjustedTop}px`;
+        events[eventElement.id].hour = closest.getAttribute('data-time');
     }
 }
