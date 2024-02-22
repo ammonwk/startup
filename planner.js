@@ -1,13 +1,17 @@
-let events = {};
-let nextID = -1;
+events = {};
+nextID = -1;
+loadEventsFromLocalStorage();
+generateTimeSidebar();
+setupEventListeners();
 
-// Save the events to local storage
-function saveEvents() {
+
+// Utility functions
+function saveToLocalStorage() {
     localStorage.setItem('events', JSON.stringify(events));
     console.log("Events saved to local storage");
 }
 
-function clearEvents() {
+function clearLocalStorage() {
     localStorage.removeItem('events');
     events = {};
     nextID = -1;
@@ -15,153 +19,136 @@ function clearEvents() {
     console.log("Events cleared from local storage");
 }
 
-// Load the events from local storage
-
-// TODO: The y position of the event is not being loaded correctly, 170 is a magic number
-function loadEvents() {
+function loadEventsFromLocalStorage() {
     const storedEvents = localStorage.getItem('events');
     if (storedEvents) {
         events = JSON.parse(storedEvents);
-        nextID = Math.max(...Object.keys(events));
-        for (const id in events) {
-            const event = events[id];
-            const eventElement = createEventElement();
-            eventElement.style.left = event.x;
-            eventElement.style.top = event.y;
-            eventElement.textContent = event.name;
-            eventElement.setAttribute('id', event.id);
-            document.getElementById('events-container').appendChild(eventElement);
-        }
+        nextID = Math.max(-1, ...Object.keys(events).map(Number));
+        Object.values(events).forEach(event => displayEvent(event));
+        console.log("Events loaded from local storage");
     }
 }
 
-// Generate the time sidebar
-document.addEventListener('DOMContentLoaded', function () {
+function generateTimeSidebar() {
     const timeSidebar = document.getElementById('time-sidebar');
     for (let hour = 6; hour <= 23; hour++) {
         const timeBlock = document.createElement('div');
+        timeBlock.className = 'time-block';
         timeBlock.setAttribute('data-time', hour);
         timeBlock.textContent = `${hour % 12 || 12} ${hour < 12 ? 'AM' : 'PM'}`;
-        timeBlock.className = 'time-block';
         timeSidebar.appendChild(timeBlock);
     }
+}
 
-    if (localStorage.getItem("events")) {
-        loadEvents();
-        console.log("Events loaded from local storage");
-    }
-
-});
-
-// Event creation on click
-document.getElementById('events-container').addEventListener('click', function (e) {
-    if (!e.target.classList.contains('event')) { // If clicked on background
-        const newEvent = createEventElement(); // Make a new event
-        const containerRect = this.getBoundingClientRect();
-
-        const x = e.clientX - containerRect.left; // Calculate position
-        const y = e.clientY - containerRect.top; // relative to the events container
-
-        newEvent.style.left = `${x}px`; // Set the position
-        newEvent.style.top = `${y}px`;
-        this.appendChild(newEvent); // organize HTML
-        const hour = snapToClosestTimeBlock(newEvent)
-        events[++nextID] = {
-            id: nextID,
-            name: newEvent.textContent,
-            time: hour, // function actually moves event y
-            x: newEvent.style.left,
-            y: newEvent.style.top,
-        };
-        saveEvents();
-        newEvent.setAttribute('id', nextID);
-        console.log(events);
-    }
-});
-
-// Make the events draggable
-let draggedElement = null;
-let startX, startY;
-
-document.addEventListener('mousedown', function (e) {
-    if (e.target.classList.contains('event')) {
-        draggedElement = e.target;
-        const rect = draggedElement.getBoundingClientRect();
-
-        // Record the initial mouse position and element position
-        startX = e.clientX;
-        startY = e.clientY;
-        draggedElement.startX = rect.left;
-        draggedElement.startY = rect.top;
-
-        // Prevent any text selection or other draggable elements interference
-        e.preventDefault();
-        draggedElement.classList.add("dragging");
-    }
-});
-
-document.addEventListener('mousemove', function (e) {
-    if (draggedElement) {
-        // Calculate new position
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        const newLeft = draggedElement.startX + dx;
-        const newTop = draggedElement.startY + dy;
-
-        // Get bounding rectangle of events container
-        const containerRect = document.getElementById('events-container').getBoundingClientRect();
-
-        // Adjust position relative to the events container
-        draggedElement.style.left = `${newLeft - containerRect.left}px`;
-        draggedElement.style.top = `${newTop - containerRect.top}px`;
-    }
-});
-
-document.addEventListener('mouseup', function () {
-    if (draggedElement) {
-        snapToClosestTimeBlock(draggedElement);
-        draggedElement.classList.remove("dragging");
-        // Save the new position
-        events[draggedElement.id].x = draggedElement.style.left;
-        events[draggedElement.id].y = draggedElement.style.top;
-        saveEvents();
-        draggedElement = null;
-    }
-});
+function displayEvent(event) {
+    const eventElement = createEventElement(event.id, event.name, event.x, event.y);
+    snapToClosestTimeBlock(eventElement);
+    document.getElementById('events-container').appendChild(eventElement);
+}
 
 
-// Function to create a new event element
-function createEventElement() {
+function createEventElement(id = ++nextID, name = 'New Event', x = 0, y = 0) {
     const eventElement = document.createElement('div');
     eventElement.className = 'event';
-    eventElement.textContent = 'New Event';
+    eventElement.textContent = name;
+    eventElement.style.left = x;
+    eventElement.style.top = y;
+    eventElement.setAttribute('id', id);
+    snapToClosestTimeBlock(eventElement);
     return eventElement;
 }
 
-// Snap the event to the closest time block
+function setupEventListeners() {
+    document.getElementById('events-container').addEventListener('click', (e) => onContainerClick(e));
+    document.addEventListener('mousedown', (e) => onDragStart(e));
+    document.addEventListener('mousemove', (e) => onDrag(e));
+    document.addEventListener('mouseup', () => onDragEnd());
+}
+
+function onContainerClick(e) {
+    if (!e.target.classList.contains('event')) {
+        const newEvent = createEventElement();
+        const { x, y } = calculatePosition(e, e.currentTarget);
+        newEvent.style.left = `${x}px`;
+        newEvent.style.top = `${y}px`;
+        e.currentTarget.appendChild(newEvent);
+
+        snapToClosestTimeBlock(newEvent);
+        events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${x}px`, y: `${y}px` };
+        saveToLocalStorage();
+    }
+}
+
+let draggedElement = null;
+function onDragStart(e) {
+    if (e.target.classList.contains('event')) {
+        e.preventDefault();
+        draggedElement = e.target;
+        const rect = draggedElement.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        draggedElement.classList.add("dragging");
+    }
+}
+
+function onDrag(e) {
+    if (draggedElement) {
+        const containerRect = document.getElementById('events-container').getBoundingClientRect();
+        let newX = e.clientX - containerRect.left - startX;
+        let newY = e.clientY - containerRect.top - startY;
+
+        newX = Math.max(0, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
+        newY = Math.max(0, Math.min(newY, containerRect.height - draggedElement.offsetHeight));
+
+        draggedElement.style.left = `${newX}px`;
+        draggedElement.style.top = `${newY}px`;
+    }
+}
+
+function onDragEnd() {
+    if (draggedElement) {
+        const id = draggedElement.getAttribute('id');
+        if (id && events[id]) {
+            events[id].x = draggedElement.style.left;
+            events[id].y = draggedElement.style.top;
+            saveToLocalStorage();
+        }
+        draggedElement.classList.remove("dragging");
+        snapToClosestTimeBlock(draggedElement);
+        draggedElement = null;
+    }
+}
+
+function calculatePosition(e, container, isDragging = false) {
+    const containerRect = container.getBoundingClientRect();
+    const x = e.clientX - containerRect.left;
+    const y = e.clientY - containerRect.top;
+    if (isDragging) {
+        return { x: x + startX - e.clientX, y: y + startY - e.clientY };
+    }
+    return { x, y };
+}
+
 function snapToClosestTimeBlock(eventElement) {
     const timeBlocks = document.getElementsByClassName('time-block');
     let closest = null;
     let closestDist = Infinity;
     const eventRect = eventElement.getBoundingClientRect();
     const eventTop = eventElement.style.top.substring(0, eventElement.style.top.length - 2);
-    const offset = eventRect.top - eventTop;
+
     Array.from(timeBlocks).forEach(block => {
         const blockRect = block.getBoundingClientRect().top;
-        // console.log("event.style.top = ", blockRect.style.top.substring(0, eventElement.style.top.length - 2));
         const dist = Math.abs(blockRect - eventRect.top);
         if (dist < closestDist) {
             closest = block;
             closestDist = dist;
         }
     });
-    console.log(closestDist)
 
     if (closest) {
         const closestRect = closest.getBoundingClientRect();
+        // getBoundingClientRect and style.top are offset, so we need to convert
+        const offset = eventRect.top - eventTop;
         eventElement.style.top = `${closestRect.top - offset}px`;
     }
-    console.log("saved time = ", closest.getAttribute('data-time'));
-    return closest.getAttribute('data-time');
 }
