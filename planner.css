@@ -11,7 +11,6 @@ html {
 
 #time-sidebar {
     width: 65px;
-    /* Adjust as needed */
     background-color: #f0f0f0;
     overflow: auto;
     text-align: right;
@@ -46,26 +45,7 @@ html {
     overflow: hidden;
 }
 
-
-
-
-/* Add styling for resizing handles if needed 
-.event::after {
-    content: '';
-    width: 10px;
-    height: 10px;
-    background: #ccc;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    border-radius: 2px;
-    cursor: se-resize;
-} */
-
-/* Style for the active dragging event */
 .dragging {
     z-index: 1000;
     box-shadow: -2px 5px 5px rgba(0, 0, 0, 0.2);
 }
-
-/* You can add more specific styles for event colors, typography, etc. */
