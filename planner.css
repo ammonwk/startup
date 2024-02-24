@@ -4,38 +4,42 @@ html {
     margin: 0;
 }
 
-#schedule-container {
-    display: flex;
-    height: 100%;
-}
-
-#time-sidebar {
-    width: 65px;
-    background-color: #f0f0f0;
-    overflow: auto;
-    text-align: right;
-    margin-left: auto;
-    margin-right: 0;
+div.hr {
+    border-top: 1px solid #ddd;
+    margin-left: 85px;
 }
 
 .time-block {
     padding: 5px 10px;
-    border-bottom: 1px solid #ddd;
     white-space: nowrap;
+    text-align: right;
+    padding-right: calc(100% - 4em);
+
+    /* Make time text not unselectable */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.half-hour {
+    opacity: 0;
+    /* Hide the half-hour labels */
 }
 
 #events-container {
-    flex-grow: 1;
-    background-color: #fff;
+    background-color: #fcfcfc;
     position: relative;
     overflow: auto;
-    padding: 20px;
+    /* Should the overflow be auto? */
 }
 
 .event {
     position: absolute;
-    min-width: 100px;
-    min-height: 30px;
+    min-width: 6em;
+    min-height: 2em;
     background-color: #f2f2f2;
     border: 1px solid #ccc;
     border-radius: 4px;

@@ -4,6 +4,8 @@ generateTimeSidebar();
 loadEventsFromLocalStorage();
 setupEventListeners();
 
+// TODO: Fix bug where event is duplicated when dropping element on time block
+// TODO: Fix magic number 85 pixels (could ems help?)
 
 // Utility functions
 function saveToLocalStorage() {
@@ -14,7 +16,11 @@ function clearLocalStorage() {
     localStorage.removeItem('events');
     events = {};
     nextID = -1;
-    document.getElementById('events-container').innerHTML = '';
+    // Delete all events from the page
+    var events_on_page = document.getElementsByClassName('event');
+    while (events_on_page.length > 0) {
+        events_on_page[0].parentNode.removeChild(events_on_page[0]);
+    }
 }
 
 function loadEventsFromLocalStorage() {
@@ -27,13 +33,26 @@ function loadEventsFromLocalStorage() {
 }
 
 function generateTimeSidebar() {
-    const timeSidebar = document.getElementById('time-sidebar');
-    for (let hour = 6; hour <= 23; hour++) {
+    const eventsContainer = document.getElementById('events-container');
+    for (let hour = 6; hour <= 22; hour++) {
+        // Add horizontal rules
+        const hr = document.createElement('div');
+        hr.className = 'hr';
+        hr.style.top = `${(hour - 1.92) * 4.25}em`;
+        eventsContainer.appendChild(hr);
+        // Add hour blocks
         const timeBlock = document.createElement('div');
         timeBlock.className = 'time-block';
         timeBlock.setAttribute('data-time', hour);
         timeBlock.textContent = `${hour % 12 || 12} ${hour < 12 ? 'AM' : 'PM'}`;
-        timeSidebar.appendChild(timeBlock);
+        eventsContainer.appendChild(timeBlock);
+        // Add half-hour blocks
+        const halfTimeBlock = document.createElement('div');
+        halfTimeBlock.className = 'time-block half-hour';
+        halfTimeBlock.setAttribute('data-time', hour + 0.5);
+        // TODO: Invisible letters are probably not the best workaround
+        halfTimeBlock.textContent = `${hour % 12 || 12}:30 ${hour < 12 ? 'AM' : 'PM'}`;
+        eventsContainer.appendChild(halfTimeBlock);
     }
 }
 
@@ -67,10 +86,10 @@ function onContainerClick(e) {
     if (!e.target.classList.contains('event')) {
         const newEvent = createEventElement();
         const { x, y } = calculatePosition(e, e.currentTarget);
-        newEvent.style.left = `${x}px`;
+        newEvent.style.left = `${Math.max(85, x)}px`; // 85 is the width of the time sidebar
         newEvent.style.top = `${y}px`;
         e.currentTarget.appendChild(newEvent);
-        events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${x}px` };
+        events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${Math.max(85, x)}px` };
         snapToClosestTimeBlock(newEvent); // Also sets event.hour
         saveToLocalStorage();
     }
@@ -95,9 +114,9 @@ function onDrag(e) {
         let newY = e.clientY - containerRect.top - startY;
 
         // Bind event to the container
-        newX = Math.max(0, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
+        newX = Math.max(85, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
         newY = Math.max(0, Math.min(newY, containerRect.height - draggedElement.offsetHeight));
-
+        // the 85 makes sure events don't cover the time sidebar (Magic number: BAD)
         draggedElement.style.left = `${newX}px`;
         draggedElement.style.top = `${newY}px`;
     }
@@ -145,7 +164,10 @@ function snapToClosestTimeBlock(eventElement) {
     if (closest) {
         // Adjust position to be relative to the container, not the viewport
         // Is there an easier way to do this? Jquery has offset(), but that wouldn't combine with React
-        const adjustedTop = closest.getBoundingClientRect().top - containerRect.top + document.getElementById('events-container').scrollTop - document.body.scrollTop;
+        const adjustedTop = closest.getBoundingClientRect().top
+            - containerRect.top
+            + document.getElementById('events-container').scrollTop
+            - document.body.scrollTop;
         eventElement.style.top = `${adjustedTop}px`;
         events[eventElement.id].hour = closest.getAttribute('data-time');
     }
