@@ -83,7 +83,7 @@ function setupEventListeners() {
 }
 
 function onContainerClick(e) {
-    if (!e.target.classList.contains('event')) {
+    if (!e.target.classList.contains('event') && !draggedElement) {
         const newEvent = createEventElement();
         const { x, y } = calculatePosition(e, e.currentTarget);
         newEvent.style.left = `${Math.max(85, x)}px`; // 85 is the width of the time sidebar
@@ -117,8 +117,10 @@ function onDrag(e) {
         newX = Math.max(85, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
         newY = Math.max(0, Math.min(newY, containerRect.height - draggedElement.offsetHeight));
         // the 85 makes sure events don't cover the time sidebar (Magic number: BAD)
-        draggedElement.style.left = `${newX}px`;
-        draggedElement.style.top = `${newY}px`;
+        if (draggedElement.style) {
+            draggedElement.style.left = `${newX}px`;
+            draggedElement.style.top = `${newY}px`;
+        }
     }
 }
 
@@ -131,7 +133,11 @@ function onDragEnd() {
         draggedElement.classList.remove("dragging");
         snapToClosestTimeBlock(draggedElement);
         saveToLocalStorage();
-        draggedElement = null;
+        draggedElement = 1;
+        dragTimer = setTimeout(function () {
+            draggedElement = null;
+        }, 50); // Prevents a new event from being created when dragging an existing event
+
     }
 }
 
