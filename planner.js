@@ -1,13 +1,11 @@
-events = {};
-nextID = -1;
+let events = {};
+let nextID = -1;
+let startX, startY;
 generateTimeSidebar();
 loadEventsFromLocalStorage();
 setupEventListeners();
 
-// TODO: Fix bug where event is duplicated when dropping element on time block
-// TODO: Fix magic number 85 pixels (could ems help?)
 
-// Utility functions
 function saveToLocalStorage() {
     localStorage.setItem('events', JSON.stringify(events));
 }
