@@ -80,6 +80,10 @@ function setupEventListeners() {
     document.addEventListener('mousedown', (e) => onDragStart(e));
     document.addEventListener('mousemove', (e) => onDrag(e));
     document.addEventListener('mouseup', () => onDragEnd());
+
+    document.addEventListener('touchstart', (e) => onDragStart(e), { passive: false });
+    document.addEventListener('touchmove', (e) => onDrag(e), { passive: false });
+    document.addEventListener('touchend', () => onDragEnd(), { passive: false });
 }
 
 function onContainerClick(e) {
@@ -98,11 +102,11 @@ function onContainerClick(e) {
 let draggedElement = null;
 function onDragStart(e) {
     if (e.target.classList.contains('event')) {
-        e.preventDefault();
         draggedElement = e.target;
         const rect = draggedElement.getBoundingClientRect();
-        startX = e.clientX - rect.left;
-        startY = e.clientY - rect.top;
+        // null coalescing operator (??) is used to handle touch events
+        startX = (e.clientX ?? e.touches[0].pageX) - rect.left;
+        startY = (e.clientY ?? e.touches[0].pageY) - rect.top;
         draggedElement.classList.add("dragging");
     }
 }
@@ -110,13 +114,18 @@ function onDragStart(e) {
 function onDrag(e) {
     if (draggedElement) {
         const containerRect = document.getElementById('events-container').getBoundingClientRect();
-        let newX = e.clientX - containerRect.left - startX;
-        let newY = e.clientY - containerRect.top - startY;
+        if (e.type === 'touchmove') {
+            e.preventDefault();
+            e = e.touches[0];
+        }
+        // null coalescing operator (??) is used to handle touch events
+        let newX = (e.pageX ?? e.clientX) - containerRect.left - startX;
+        let newY = (e.pageY ?? e.clientY) - containerRect.top - startY;
 
         // Bind event to the container
         newX = Math.max(85, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
         newY = Math.max(0, Math.min(newY, containerRect.height - draggedElement.offsetHeight));
-        // the 85 makes sure events don't cover the time sidebar (Magic number: BAD)
+        // the 85px makes sure events don't cover the time sidebar (Magic number: BAD)
         if (draggedElement.style) {
             draggedElement.style.left = `${newX}px`;
             draggedElement.style.top = `${newY}px`;
@@ -143,8 +152,16 @@ function onDragEnd() {
 
 function calculatePosition(e, container, isDragging = false) {
     const containerRect = container.getBoundingClientRect();
-    const x = e.clientX - containerRect.left;
-    const y = e.clientY - containerRect.top;
+    // const x = touch.pageX || e.clientX;
+    // const y = touch.pageY || e.clientY;
+    let x, y;
+    if (e.type === 'touchmove') {
+        x = touch.pageX - containerRect.left;
+        y = touch.pageY - containerRect.top;
+    } else {
+        x = e.clientX - containerRect.left;
+        y = e.clientY - containerRect.top;
+    }
     if (isDragging) {
         return { x: x + startX - e.clientX, y: y + startY - e.clientY };
     }
