@@ -87,10 +87,12 @@ function setupEventListeners() {
 function onContainerClick(e) {
     if (!e.target.classList.contains('event') && !draggedElement) {
         const newEvent = createEventElement();
-        const { x, y } = calculatePosition(e, e.currentTarget);
+        e.currentTarget.appendChild(newEvent);
+        let { x, y } = calculatePosition(e, e.currentTarget);
+        x = x - newEvent.getBoundingClientRect().width / 2; // Center the event on the cursor
+        y = y - newEvent.getBoundingClientRect().height / 2;
         newEvent.style.left = `${Math.max(85, x)}px`; // 85 is the width of the time sidebar
         newEvent.style.top = `${y}px`;
-        e.currentTarget.appendChild(newEvent);
         events[newEvent.id] = { id: newEvent.id, name: newEvent.textContent, x: `${Math.max(85, x)}px` };
         snapToClosestTimeBlock(newEvent); // Also sets event.hour
         saveToLocalStorage();
@@ -150,8 +152,6 @@ function onDragEnd() {
 
 function calculatePosition(e, container, isDragging = false) {
     const containerRect = container.getBoundingClientRect();
-    // const x = touch.pageX || e.clientX;
-    // const y = touch.pageY || e.clientY;
     let x, y;
     if (e.type === 'touchmove') {
         x = touch.pageX - containerRect.left;
