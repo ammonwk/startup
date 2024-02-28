@@ -30,7 +30,7 @@
   <main class="container mt-5">
     <h2 class="mb-3">Welcome</h2>
     <p>Please make an account to continue</p>
-    <form method="get" action="play.html">
+    <form method="post">
       <div class="form-group">
         <label for="name">Name</label>
         <input type="text" class="form-control" id="name" placeholder="Your name here">
@@ -39,7 +39,7 @@
         <label for="password">Password</label>
         <input type="password" class="form-control" id="password" placeholder="Password...">
       </div>
-      <button type="submit" class="btn btn-primary">Login</button>
+      <button type="submit" class="btn btn-primary" onclick="login(event)">Login</button>
     </form>
   </main>
   <footer class="mt-auto bg-light d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
@@ -67,6 +67,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
     integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
     crossorigin="anonymous"></script>
+  <script src="login.js" defer></script>
 
 </body>
 

@@ -5,6 +5,7 @@ generateTimeSidebar();
 loadEventsFromLocalStorage();
 setupEventListeners();
 
+document.getElementsByClassName("welcome")[0].innerHTML = "Welcome, " + localStorage.getItem("userName");
 
 function saveToLocalStorage() {
     localStorage.setItem('events', JSON.stringify(events));
