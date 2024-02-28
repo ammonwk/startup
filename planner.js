@@ -106,8 +106,8 @@ function onDragStart(e) {
         draggedElement = e.target;
         const rect = draggedElement.getBoundingClientRect();
         // null coalescing operator (??) is used to handle touch events
-        startX = (e.clientX ?? e.touches[0].pageX) - rect.left;
-        startY = (e.clientY ?? e.touches[0].pageY) - rect.top;
+        startX = (e.pageX ?? e.touches[0].pageX) - rect.left;
+        startY = (e.pageY ?? e.touches[0].pageY) - rect.top;
         draggedElement.classList.add("dragging");
     }
 }
@@ -120,8 +120,8 @@ function onDrag(e) {
             e = e.touches[0];
         }
         // null coalescing operator (??) is used to handle touch events
-        let newX = (e.pageX ?? e.clientX) - containerRect.left - startX;
-        let newY = (e.pageY ?? e.clientY) - containerRect.top - startY;
+        let newX = (e.pageX ?? e.pageX) - containerRect.left - startX;
+        let newY = (e.pageY ?? e.pageY) - containerRect.top - startY;
 
         // Bind event to the container
         newX = Math.max(85, Math.min(newX, containerRect.width - draggedElement.offsetWidth));
@@ -158,11 +158,11 @@ function calculatePosition(e, container, isDragging = false) {
         x = touch.pageX - containerRect.left;
         y = touch.pageY - containerRect.top;
     } else {
-        x = e.clientX - containerRect.left;
-        y = e.clientY - containerRect.top;
+        x = e.pageX - containerRect.left;
+        y = e.pageY - containerRect.top;
     }
     if (isDragging) {
-        return { x: x + startX - e.clientX, y: y + startY - e.clientY };
+        return { x: x + startX - e.pageX, y: y + startY - e.pageY };
     }
     return { x, y };
 }
