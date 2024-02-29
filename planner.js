@@ -155,14 +155,14 @@ function calculatePosition(e, container, isDragging = false) {
     const containerRect = container.getBoundingClientRect();
     let x, y;
     if (e.type === 'touchmove') {
-        x = touch.pageX - containerRect.left;
-        y = touch.pageY - containerRect.top;
+        x = touch.clientX - containerRect.left;
+        y = touch.clientY - containerRect.top;
     } else {
-        x = e.pageX - containerRect.left;
-        y = e.pageY - containerRect.top;
+        x = e.clientX - containerRect.left;
+        y = e.clientY - containerRect.top;
     }
     if (isDragging) {
-        return { x: x + startX - e.pageX, y: y + startY - e.pageY };
+        return { x: x + startX - e.clientX, y: y + startY - e.clientY };
     }
     return { x, y };
 }
