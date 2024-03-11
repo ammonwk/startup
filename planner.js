@@ -4,7 +4,9 @@ let events = JSON.parse(localStorage.getItem('events')) || {};
 let nextID = Math.max(...Object.keys(events).map(id => parseInt(id))) + 1 || 0;
 
 // Main setup functions
-document.querySelector(".welcome").innerHTML = "Welcome, " + localStorage.getItem("userName");
+if (localStorage.getItem("userName") != null) {
+    document.querySelector(".welcome").innerHTML = "Welcome, " + localStorage.getItem("userName");
+}
 generateTimeSidebar();
 populateEvents();
 setupEventListeners();
