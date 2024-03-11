@@ -1,4 +1,2 @@
-.gitignore
-deployFiles.sh
 startup.code-workspace
-Mah2.jpg
+node_modules/
