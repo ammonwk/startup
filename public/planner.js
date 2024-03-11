@@ -1,7 +1,10 @@
 // Initialize the events from local storage if they exist
 let events = JSON.parse(localStorage.getItem('events')) || {};
 // Next available ID for new events = max existing ID + 1, or 0
-let nextID = Math.max(...Object.keys(events).map(id => parseInt(id))) + 1 || 0;
+let nextID = 0;
+if (Object.keys(events).length > 0) {
+    nextID = Math.max(...Object.keys(events).map(id => parseInt(id, 10))) + 1;
+}
 
 // Main setup functions
 if (localStorage.getItem("userName") != null) {
