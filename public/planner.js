@@ -1,18 +1,38 @@
-// Initialize the events from local storage if they exist
-let events = JSON.parse(localStorage.getItem('events')) || {};
-// Next available ID for new events = max existing ID + 1, or 0
+let events = {};
 let nextID = 0;
-if (Object.keys(events).length > 0) {
-    nextID = Math.max(...Object.keys(events).map(id => parseInt(id, 10))) + 1;
+async function loadEvents() {
+    try { //TODO: These events have to be hidden behind authentication
+        // Get the scores from the service
+        const response = await fetch('/api/events');
+        events = await response.json();
+
+        // Save the scores in case we go offline in the future
+        localStorage.setItem('events', JSON.stringify(events));
+    } catch (e) {
+        // If there was an error then just use the last saved scores
+        console.log('Failed to load events from the server. Using local data...', e);
+        events = JSON.parse(localStorage.getItem('events')) || {};
+    }
+
+    // Initialize the events from local storage if they exist
+    // Next available ID for new events = max existing ID + 1, or 0
+    nextID = 0;
+    if (Object.keys(events).length > 0) {
+        nextID = Math.max(...Object.keys(events).map(id => parseInt(id, 10))) + 1;
+    }
+
+    populateEvents();
+    setupEventListeners();
 }
 
+
 // Main setup functions
+loadEvents();
 if (localStorage.getItem("userName") != null) {
     document.querySelector(".welcome").innerHTML = "Welcome, " + localStorage.getItem("userName");
 }
 generateTimeSidebar();
-populateEvents();
-setupEventListeners();
+
 
 // Generates time blocks for the sidebar, displaying hours from 6 AM to 10 PM
 function generateTimeSidebar() {
@@ -67,8 +87,18 @@ function setupEventListeners() {
 }
 
 // Saves the current state of events to local storage
-function saveEvents() {
+async function saveEvents() {
     localStorage.setItem('events', JSON.stringify(events));
+    try {
+        await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(events),
+        });
+    } catch {
+        console.log('Failed to save events to the server. Saving locally...');
+    }
+
 }
 
 // Clears all events from local storage and resets the application state
