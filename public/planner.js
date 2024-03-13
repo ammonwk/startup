@@ -45,7 +45,7 @@ fetch('https://api.api-ninjas.com/v1/quotes?category=faith', {
     }
     return response.json();
 }).then(function (result) {
-    document.querySelector(".quote").innerHTML = result[0].quote + " - " + result[0].author;
+    document.querySelector(".quote").innerHTML = `"${result[0].quote}" - ${result[0].author}.`
 }).catch(function (error) {
     console.error('Error:', error);
 });
