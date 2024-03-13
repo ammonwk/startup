@@ -17,7 +17,8 @@
   - Endpoints used to serve up html files (Middleware)
   - Endpoints used to save and load events to the server
     - This will soon be locked behind authentication, but for now everyone in the world saves and loads the same set of events.
-  - Google Maps API accessed under Maps page
+  - Quote API called in the planner page
+    - Also, Google Maps API accessed under Maps page
 
 ### Elevator Pitch
 An estimated 65 percent[^1] of students attending BYU are returned missionaries, and every single one of us has been trained to live off the planner, dream of the planner, and die for the planner. This AreaBook Planner (now called Preach My Gospel: the app[^2]) is an application that missionaries use to detail their days, plan their time, and track their results. Returned missionaries are left stranded without access to that planner app anymore, until now.
