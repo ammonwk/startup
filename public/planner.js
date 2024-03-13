@@ -33,6 +33,24 @@ if (localStorage.getItem("userName") != null) {
 }
 generateTimeSidebar();
 
+fetch('https://api.api-ninjas.com/v1/quotes?category=faith', {
+    method: 'GET', // The HTTP method to use for the request
+    headers: {
+        'X-Api-Key': 'mSk7rfR5LnbL1FtY21YE8Q==pDgGWJtNnmVdIInG',
+        'Content-Type': 'application/json'
+    }
+}).then(function (response) {
+    if (!response.ok) {
+        throw new Error('Network response was not ok', response.status);
+    }
+    return response.json();
+}).then(function (result) {
+    document.querySelector(".quote").innerHTML = result[0].quote + " - " + result[0].author;
+}).catch(function (error) {
+    console.error('Error:', error);
+});
+
+
 
 // Generates time blocks for the sidebar, displaying hours from 6 AM to 10 PM
 function generateTimeSidebar() {
