@@ -47,19 +47,17 @@ var apiRouter = express.Router();
 app.use(`/api`, apiRouter);
 
 apiRouter.post('/login', async (req, res) => {
-    const user = await db.collection('user').findOne({ email: req.body.email });
-    if (user) {
-        if (await bcrypt.compare(req.body.password, user.password)) {
-            res.cookie("token", user.token, {
-                secure: true,
-                httpOnly: true,
-                sameSite: 'strict',
-            });
-            res.send({ id: user._id });
-        }
+    const user = await db.collection('users').findOne({ username: req.body.username });
+    if (user && await bcrypt.compare(req.body.password, user.password)) {
+        console.log('User', user, 'found');
+        res.cookie("token", user.token, {
+            secure: true,
+            httpOnly: true,
+            sameSite: 'strict',
+        });
+        res.send({ id: user._id });
     } else {
         res.status(401).send({ msg: 'Invalid username or password' });
-        console.log('Invalid username or password');
     }
 });
 
@@ -68,7 +66,6 @@ apiRouter.post('/signup', async (req, res) => {
     const user = await db.collection('users').findOne({ username: username });
     if (user) {
         res.status(409).send({ msg: 'Username taken' });
-        console.log('Username already exists');
     } else {
         const user = await createUser(req.body.username, req.body.password);
         res.cookie("token", user.token, {
