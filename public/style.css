@@ -67,3 +67,25 @@ main {
         margin-bottom: 9em;
     }
 }
+
+/* .dropdown-menu-wrapper {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dropdown-menu {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    right: 0;
+} */
+
+.login_display {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+    height: 100vh;
+    padding: 2em;
+}
