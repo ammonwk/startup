@@ -39,8 +39,9 @@ async function createUser(username, password) {
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
 // Middleware - Static file hosting
-app.use(express.json());
-app.use(express.static('public'));
+app.use(express.json()); // Parse JSON bodies
+app.use(express.static('public')); // Serve the public directory as static files
+app.use(cookieParser()); // Parse cookies
 
 // Router for service endpoints
 var apiRouter = express.Router();
@@ -79,18 +80,33 @@ apiRouter.post('/signup', async (req, res) => {
     }
 });
 
-// In-memory storage for the events
-let events = {};
-
-// Service endpoints
-apiRouter.get('/events', (_req, res) => {
-    res.send(events);
+// Get and set events for the user
+apiRouter.get('/events', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        // Find the events document for this user
+        const userEvents = await db.collection('events').findOne({ userId: user._id });
+        // If the document exists, send it; otherwise, send an empty object
+        res.send(userEvents ? userEvents.events : {});
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
 });
 
-apiRouter.post('/events', (req, res) => {
-    events = req.body;
-    res.send(events);
+apiRouter.post('/events', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        const events = req.body;
+        // Update or insert the entire events document for this user
+        await db.collection('events').updateOne({ userId: user._id }, { $set: { events: events, userId: user._id } }, { upsert: true });
+        res.send(events);
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
 });
+
 
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack for debugging

@@ -1,7 +1,7 @@
 let events = {};
 let nextID = 0;
 async function loadEvents() {
-    try { //TODO: These events have to be hidden behind authentication
+    try {
         // Get the scores from the service
         const response = await fetch('/api/events');
         events = await response.json();
@@ -116,7 +116,6 @@ async function saveEvents() {
     } catch {
         console.log('Failed to save events to the server. Saving locally...');
     }
-
 }
 
 // Clears all events from local storage and resets the application state
@@ -125,6 +124,7 @@ function clearEvents() {
     events = {};
     nextID = 0;
     document.querySelectorAll('.event').forEach(event => event.remove());
+    saveEvents();
 }
 
 // Creates a new event element with the given data

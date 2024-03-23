@@ -8,6 +8,8 @@ async function login(event) {
         headers: { 'content-type': 'application/json; charset=UTF-8' },
     });
     if (response.ok) {
+        // clear events from local storage
+        localStorage.removeItem('events');
         localStorage.setItem("userName", username);
         window.location.href = "planner.html";
     } else {
