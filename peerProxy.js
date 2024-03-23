@@ -4,12 +4,15 @@ const uuid = require('uuid');
 function peerProxy(httpServer) {
   // Create a websocket object
   const wss = new WebSocketServer({ noServer: true });
+  // Keep track of all the connections
+  let connections = [];
 
   // Broadcast the user count to all connected clients
-  function broadcastUserCount() {
+  function broadcastUsers() {
+    const usernames = connections.filter(c => c.username).map(c => c.username);
     wss.clients.forEach(function each(client) {
       if (client.readyState === 1) {
-        client.send(JSON.stringify({ type: 'userCount', count: wss.clients.size }));
+        client.send(JSON.stringify({ type: 'userList', count: wss.clients.size, usernames }));
       }
     });
   }
@@ -21,13 +24,22 @@ function peerProxy(httpServer) {
     });
   });
 
-  // Keep track of all the connections
-  let connections = [];
 
   wss.on('connection', (ws) => {
     const connection = { id: uuid.v4(), alive: true, ws: ws };
     connections.push(connection);
-    broadcastUserCount();
+    broadcastUsers();
+
+    ws.on('message', (message) => {
+      const data = JSON.parse(message);
+      if (data.type === 'setUsername') {
+        const pos = connections.findIndex((o) => o.id === connection.id);
+        if (pos !== -1) {
+          connections[pos].username = data.username;
+          broadcastUsers();
+        }
+      }
+    });
 
 
     // Remove the closed connection so we don't try to forward anymore
@@ -37,7 +49,7 @@ function peerProxy(httpServer) {
       if (pos >= 0) {
         connections.splice(pos, 1);
       }
-      broadcastUserCount();
+      broadcastUsers();
     });
 
     // Respond to pong messages by marking the connection alive
@@ -57,7 +69,7 @@ function peerProxy(httpServer) {
         c.ws.ping();
       }
     });
-    broadcastUserCount();
+    broadcastUsers();
   }, 10000);
 }
 
