@@ -1,8 +1,8 @@
-async function login(event) {
+async function signup(event) {
     event.preventDefault() // Prevent the form from submitting
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const response = await fetch('/api/login', {
+    const response = await fetch('/api/signup', {
         method: 'POST',
         body: JSON.stringify({ username: username, password: password }),
         headers: { 'content-type': 'application/json; charset=UTF-8' },

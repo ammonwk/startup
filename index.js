@@ -28,6 +28,29 @@ app.use(express.static('public'));
 var apiRouter = express.Router();
 app.use(`/api`, apiRouter);
 
+apiRouter.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await db.collection('users').findOne({ username: username, password: password });
+    if (user) {
+        res.send({ username: user.username });
+    } else {
+        res.status(401).send({ msg: 'Invalid username or password' });
+        console.log('Invalid username or password');
+    }
+});
+
+apiRouter.post('/signup', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await db.collection('users').findOne({ username: username });
+    if (user) {
+        res.status(409).send({ msg: 'Username already exists' });
+        console.log('Username already exists');
+    } else {
+        await db.collection('users').insertOne({ username: username, password: password });
+        res.send({ username: username });
+    }
+});
+
 // In-memory storage for the events
 let events = {};
 
