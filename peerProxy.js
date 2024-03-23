@@ -5,6 +5,16 @@ function peerProxy(httpServer) {
   // Create a websocket object
   const wss = new WebSocketServer({ noServer: true });
 
+  function broadcastUserCount() {
+    console.log("Broadcasting user count", wss.clients.size, "to", wss.clients);
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === 1) {
+        client.send(JSON.stringify({ type: 'userCount', count: wss.clients.size }));
+        console.log("Broadcasting user count to", client);
+      }
+    });
+  }
+
   // Handle the protocol upgrade from HTTP to WebSocket
   httpServer.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, function done(ws) {
@@ -19,15 +29,16 @@ function peerProxy(httpServer) {
     const connection = { id: uuid.v4(), alive: true, ws: ws };
     connections.push(connection);
     console.log("Number of connections: " + connections.length);
+    broadcastUserCount();
 
-    // Forward messages to everyone except the sender
-    ws.on('message', function message(data) {
-      connections.forEach((c) => {
-        if (c.id !== connection.id) {
-          c.ws.send(data);
-        }
-      });
-    });
+    // // Forward messages to everyone except the sender
+    // ws.on('message', function message(data) {
+    //   connections.forEach((c) => {
+    //     if (c.id !== connection.id) {
+    //       c.ws.send(data);
+    //     }
+    //   });
+    // });
 
     // Remove the closed connection so we don't try to forward anymore
     ws.on('close', () => {

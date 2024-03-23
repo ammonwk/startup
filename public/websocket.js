@@ -4,5 +4,9 @@ ws.onopen = function () {
     ws.send("Hello, server!");
 };
 ws.onmessage = function (event) {
-    console.log("Received message: " + event.data);
+    console.log("Message from server:", event.data);
+    const message = JSON.parse(event.data);
+    if (message.type === 'userCount') {
+        document.getElementById('userCount').textContent = message.count;
+    }
 };
