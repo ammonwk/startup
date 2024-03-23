@@ -1,7 +1,8 @@
 var ws = new WebSocket("ws://" + window.location.host + "/path");
 ws.onopen = function () {
     console.log("Connected to WebSocket");
-    const username = localStorage.getItem("userName");
+    // Check if a username is stored, otherwise set it to "anonymous"
+    const username = localStorage.getItem("userName") || "anonymous";
     ws.send(JSON.stringify({ type: 'setUsername', username: username }));
 };
 ws.onmessage = function (event) {
