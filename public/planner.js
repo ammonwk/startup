@@ -1,18 +1,19 @@
 let events = {};
 let nextID = 0;
 async function loadEvents() {
-    try {
-        // Get the scores from the service
-        const response = await fetch('/api/events');
+    // Get the scores from the service
+    const response = await fetch('/api/events');
+    if (response.ok) {
         events = await response.json();
-
         // Save the scores in case we go offline in the future
         localStorage.setItem('events', JSON.stringify(events));
-    } catch (e) {
+    } else {
         // If there was an error then just use the last saved scores
-        console.log('Failed to load events from the server. Using local data...', e);
+        console.log('Failed to load events from the server. Using local data...', response.status);
         events = JSON.parse(localStorage.getItem('events')) || {};
     }
+
+    console.log('Loaded events:', events);
 
     // Initialize the events from local storage if they exist
     // Next available ID for new events = max existing ID + 1, or 0
@@ -30,7 +31,17 @@ async function loadEvents() {
 loadEvents();
 if (localStorage.getItem("userName") != null) {
     document.querySelector(".welcome").innerHTML = "Welcome, " + localStorage.getItem("userName");
+} else {
+    const modalEl = document.querySelector('#msgModal');
+    modalEl.querySelector('.modal-body').textContent = `Please Log in or Sign up to access the planner.`;
+    const msgModal = new bootstrap.Modal(modalEl, {});
+    msgModal.show();
+    // Redirect to login page after modal is hidden
+    modalEl.addEventListener('hidden.bs.modal', function (event) {
+        window.location.href = 'login.html';
+    });
 }
+
 generateTimeSidebar();
 
 fetch('https://api.api-ninjas.com/v1/quotes?category=faith', {
