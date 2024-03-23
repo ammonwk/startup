@@ -55,3 +55,15 @@ main {
     width: 20em;
     max-width: 90%;
 }
+
+.users {
+    position: fixed;
+    margin-bottom: 6em;
+}
+
+@media (max-width: 500px) {
+    .users {
+        position: fixed;
+        margin-bottom: 9em;
+    }
+}
