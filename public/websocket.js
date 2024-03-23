@@ -1,4 +1,5 @@
-var ws = new WebSocket("ws://" + window.location.host + "/path");
+var wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+var ws = new WebSocket(wsScheme + "://" + window.location.host + "/path");
 ws.onopen = function () {
     console.log("Connected to WebSocket");
     // Check if a username is stored, otherwise set it to "anonymous"
