@@ -43,7 +43,7 @@ apiRouter.post('/signup', async (req, res) => {
     const { username, password } = req.body;
     const user = await db.collection('users').findOne({ username: username });
     if (user) {
-        res.status(409).send({ msg: 'Username already exists' });
+        res.status(409).send({ msg: 'Username taken' });
         console.log('Username already exists');
     } else {
         await db.collection('users').insertOne({ username: username, password: password });
