@@ -48,9 +48,13 @@ var apiRouter = express.Router();
 app.use(`/api`, apiRouter);
 
 apiRouter.post('/login', async (req, res) => {
+    // handle empty input
+    if (!req.body.username || !req.body.password) {
+        res.status(400).send({ msg: 'Please enter username and password' });
+        return;
+    }
     const user = await db.collection('users').findOne({ username: req.body.username });
     if (user && await bcrypt.compare(req.body.password, user.password)) {
-        console.log('User', user, 'found');
         res.cookie("token", user.token, {
             secure: true,
             httpOnly: true,

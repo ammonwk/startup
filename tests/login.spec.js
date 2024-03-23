@@ -7,15 +7,13 @@ test.describe('Login Functionality', () => {
     });
 
     test('Successful Login', async ({ page }) => {
-        // Assuming these credentials are valid in your test environment
         await page.fill('#username', 'testuser');
         await page.fill('#password', 'password');
         await page.click('button[type="submit"]');
 
-        // Replace the URL below with the URL of the page users are redirected to upon successful login
         await expect(page).toHaveURL('http://localhost:4000/planner.html');
 
-        // Optionally, verify local storage or cookie for login state persistence
+        // Verify local storage or cookie for login state persistence
         const userName = await page.evaluate(() => localStorage.getItem('userName'));
         expect(userName).toBe('testuser');
     });
@@ -25,17 +23,51 @@ test.describe('Login Functionality', () => {
         await page.fill('#password', 'wrongpass');
         await page.click('button[type="submit"]');
 
-        // Assuming an error modal or message appears on invalid credentials
         await expect(page.locator('#msgModal .modal-body')).toContainText('Invalid username or password');
     });
 
-    // test('Empty Credentials', async ({ page }) => {
-    //     // Click login without entering credentials
-    //     await page.click('button[type="submit"]');
-    //     // Verify error message or validation
-    //     await expect(page.locator('#msgModal .modal-body')).toContainText('Please enter username and password');
-    // });
+    test('Empty Credentials', async ({ page }) => {
+        // Click login without entering credentials
+        await page.click('button[type="submit"]');
+        // Verify error message or validation
+        await expect(page.locator('#msgModal .modal-body')).toContainText('Please enter username and password');
+    });
 
 
-    // Additional tests here
+    test('Redirection After Successful Login', async ({ page }) => {
+        await page.fill('#username', 'testuser');
+        await page.fill('#password', 'password');
+        await page.click('button[type="submit"]');
+
+        // Adjust the expected URL to your application's post-login redirection target
+        await expect(page).toHaveURL('http://localhost:4000/planner.html');
+    });
+
+    test('Persistence of Login State', async ({ page }) => {
+        await page.fill('#username', 'testuser');
+        await page.fill('#password', 'password');
+        await page.click('button[type="submit"]');
+
+        // Check for the existence of a session token or similar persistent login state marker
+        await expect(page).toHaveURL('http://localhost:4000/planner.html');
+        const loginToken = await page.evaluate(() => localStorage.getItem('userName'));
+        expect(loginToken).toBe('testuser');
+
+        // Optionally, reload the page or navigate away and back, then check the login state again
+        await page.reload();
+        const loginStateAfterReload = await page.evaluate(() => localStorage.getItem('userName'));
+        await expect(page).toHaveURL('http://localhost:4000/planner.html');
+        expect(loginStateAfterReload).toBe(loginToken);
+    });
+
+
+    test('UI Elements Existence', async ({ page }) => {
+        // Check for the presence of the username input
+        await expect(page.locator('#username')).toBeVisible();
+        // Check for the presence of the password input
+        await expect(page.locator('#password')).toBeVisible();
+        // Check for the presence of the login button
+        await expect(page.locator('button[type="submit"]')).toBeVisible();
+    });
+
 });
