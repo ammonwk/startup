@@ -24,6 +24,12 @@
   - Stores users and their passwords securely
   - Can't use the planner unless authenticated
   - The events on your planner are saved with your account (Try making a few accounts to try it out)
+- Websocket
+  - Websocket is used to maintain a list of Live Users
+  - Users (Frontend) send a message with their username upon connection
+  - Users (Frontend) process messages they receive to display the list of live users
+  - Server (Backend) receives user's info when they connect and updates the list of live users
+  - Server (Backend) sends that list to all users, who then update their lists
 
 ### Elevator Pitch
 An estimated 65 percent[^1] of students attending BYU are returned missionaries, and every single one of us has been trained to live off the planner, dream of the planner, and die for the planner. This AreaBook Planner (now called Preach My Gospel: the app[^2]) is an application that missionaries use to detail their days, plan their time, and track their results. Returned missionaries are left stranded without access to that planner app anymore, until now.
