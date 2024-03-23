@@ -9,6 +9,7 @@ const db = client.db('rm_data');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const cookieParser = require('cookie-parser');
+const { peerProxy } = require('./peerProxy.js');
 
 // Connect to the database
 (async function testConnection() {
