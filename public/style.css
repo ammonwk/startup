@@ -50,3 +50,8 @@ main {
     overflow: auto;
     /* Add scroll to main content if needed */
 }
+
+.form-control {
+    width: 20em;
+    max-width: 90%;
+}
