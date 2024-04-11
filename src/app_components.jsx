@@ -1,7 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 
 export function NotFound() {

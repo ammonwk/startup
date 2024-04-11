@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { useNavigate, NavLink } from 'react-router-dom';
 
 export function Login() {
     const [username, setUsername] = React.useState('');
@@ -21,7 +22,7 @@ export function Login() {
             if (response.ok) {
                 localStorage.removeItem('events');
                 localStorage.setItem('userName', username);
-                window.location.href = 'planner.html';
+                useNavigate('/planner');
             } else {
                 const body = await response.json();
                 setModalMessage(`⚠ Error: ${body.msg}`);
@@ -35,7 +36,7 @@ export function Login() {
     return (
         <main className="mt-2 login_display">
             <h2 className="mb-3">Login - Welcome Back!</h2>
-            <p>Please enter your credentials to continue, or <a href="signup.html">make an account</a>!</p>
+            <p>Please enter your credentials to continue, or <NavLink to="/signup">make an account</NavLink>!</p>
             <form onSubmit={handleLogin}>
                 <div className="mb-3">
                     <label htmlFor="username" className="form-label">Username</label>
