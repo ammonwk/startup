@@ -2,7 +2,7 @@ import React from 'react';
 
 export function Home() {
     return (
-        <main className='container-fluid bg-secondary text-center'>
+        <main>
             <div className="bg-image">
                 <div className="col-md-5 p-lg-5 mx-auto my-5 text-center text-white">
                     <h1 className="display-4 font-weight-normal" id="pad-top">RM Planner - Home</h1>

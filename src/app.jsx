@@ -12,16 +12,18 @@ export default function App() {
     return (
         <>
             <BrowserRouter>
-                <Header />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/planner" element={<Planner />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-                <LiveUsers />
-                <Footer />
+                <div className="main-container">
+                    <Header />
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/planner" element={<Planner />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="*" element={<NotFound />} />
+                    </Routes>
+                    <LiveUsers />
+                    <Footer />
+                </div>
             </BrowserRouter>
         </>
     );
