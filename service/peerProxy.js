@@ -21,6 +21,7 @@ function peerProxy(httpServer) {
   httpServer.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, function done(ws) {
       wss.emit('connection', ws, request);
+      console.log('WebSocket connection established', request.url);
     });
   });
 

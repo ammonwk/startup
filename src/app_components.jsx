@@ -65,15 +65,37 @@ export function Footer() {
 }
 
 export function LiveUsers() {
+    const [users, setUsers] = React.useState([]);
+
+    React.useEffect(() => {
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws = new WebSocket(wsScheme + "://" + window.location.host + "/path");
+        ws.onopen = function () {
+            console.log("Connected to WebSocket");
+            // Check if a username is stored, otherwise set it to "anonymous"
+            const username = localStorage.getItem("userName") || "anonymous";
+            ws.send(JSON.stringify({ type: 'setUsername', username: username }));
+        };
+        ws.onmessage = function (event) {
+            console.log("Message from server:", event.data);
+            const message = JSON.parse(event.data);
+            if (message.type === 'userList') {
+                setUsers(message.usernames);
+            }
+        };
+    }, []);
+
     return (
         <div className="users position-fixed bottom-0 end-0 p-3">
             <div id="userCountBox" className="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                 aria-expanded="false">
-                Live Users: <span id="userCount">...</span>
+                Live Users: <span id="userCount">{users.length}</span>
             </div>
             <ul className="dropdown-menu dropdown-menu-end" id="userList">
+                {users.map((username, index) => (
+                    <li key={index} className="dropdown-item">{username}</li>
+                ))}
             </ul>
         </div>
-
     );
 }
