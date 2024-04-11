@@ -41,6 +41,7 @@ export default function App() {
                     <Route path="/planner" element={<Planner />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
             <footer className="mt-auto bg-light d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
@@ -66,4 +67,8 @@ export default function App() {
             </footer>
         </>
     );
+}
+
+function NotFound() {
+    return <main className='container-fluid bg-secondary text-center'>Error 404: Address unknown.</main>;
 }
