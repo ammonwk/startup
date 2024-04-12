@@ -30,6 +30,7 @@ function peerProxy(httpServer) {
     const connection = { id: uuid.v4(), alive: true, ws: ws };
     connections.push(connection);
     broadcastUsers();
+    console.log('WebSocket connection established', connections.length, 'clients connected')
 
     ws.on('message', (message) => {
       const data = JSON.parse(message);

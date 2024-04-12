@@ -46,8 +46,8 @@ export function Footer() {
                     <ul className="nav">
                         <li className="nav-item align-self-center"><span className="text-muted ms-3">© 2024 Ammon Kunzler</span>
                         </li>
-                        <li className="nav-item"><NavLink href="https://github.com/ammonwk/startup/blob/main/README.md"
-                            target="_blank" className="nav-link px-2 text-muted">Github</NavLink></li>
+                        <li className="nav-item"><a href="https://github.com/ammonwk/startup/blob/main/README.md"
+                            target="_blank" className="nav-link px-2 text-muted">Github</a></li>
                     </ul>
                 </nav>
             </nav>
@@ -70,6 +70,7 @@ export function LiveUsers() {
     React.useEffect(() => {
         const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
         const ws = new WebSocket(wsScheme + "://" + window.location.host + "/path");
+
         ws.onopen = function () {
             console.log("Connected to WebSocket");
             // Check if a username is stored, otherwise set it to "anonymous"
