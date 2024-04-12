@@ -6,7 +6,7 @@ import { Modal, Button, Form } from 'react-bootstrap';
 
 export function Planner() {
     const [events, setEvents] = useState({});
-    const [nextID, setNextID] = useState(0);
+    const [nextId, setNextId] = useState(0);
     const [quote, setQuote] = useState('Loading quote...');
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
@@ -23,20 +23,28 @@ export function Planner() {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
                 localStorage.setItem('events', JSON.stringify(loadedEvents));
-                const maxID = Object.keys(loadedEvents).length > 0 ? Math.max(...Object.keys(loadedEvents).map(id => parseInt(id, 10))) : -1;
-                setNextID(maxID + 1);
+                const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
+                setNextId(maxId + 1);
             } else {
                 console.log('Failed to load events from the server. Using local data...', response.status);
-                const localEvents = JSON.parse(localStorage.getItem('events')) || {};
-                setEvents(localEvents);
-                const maxID = Object.keys(localEvents).length > 0 ? Math.max(...Object.keys(localEvents).map(id => parseInt(id, 10))) : -1;
-                setNextID(maxID + 1);
-            } // This duplicated code is necessary because of the async fetch request
+                loadLocalEvents();
+            }
         } catch (error) {
             console.error('Error loading events:', error);
+            loadLocalEvents();
         }
     };
 
+    const loadLocalEvents = () => {
+        try {
+            const localEvents = JSON.parse(localStorage.getItem('events')) || {};
+            setEvents(localEvents);
+            const maxId = Object.keys(localEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
+            setNextId(maxId + 1);
+        } catch (error) {
+            console.error('Error parsing local events:', error);
+        }
+    };
 
     const fetchQuote = async () => {
         try {
@@ -60,45 +68,47 @@ export function Planner() {
 
     const createEvent = (hour) => {
         const newEvent = {
-            id: nextID,
+            id: nextId,
             name: 'New Event',
-            y: `${(hour - 6) * 50}px`,
+            y: `${(hour - 6) * 60}px`,
+            color: '#ffffff',
+            duration: 30,
         };
-        setEvents(events => ({ ...events, [nextID]: newEvent }));
-        setNextID(prevID => prevID + 1);
-        saveEvents({ ...events, [nextID]: newEvent });
+        setEvents(prevEvents => ({ ...prevEvents, [nextId]: newEvent }));
+        setNextId(prevId => prevId + 1);
+        saveEvents({ ...events, [nextId]: newEvent });
     };
 
     const updateEvent = (id, updatedEvent) => {
-        setEvents(events => ({ ...events, [id]: updatedEvent }));
+        setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
 
     const moveEvent = (id, dy) => {
-        setEvents(events => {
-            const currentEvent = events[id];
+        setEvents(prevEvents => {
+            const currentEvent = prevEvents[id];
             const currentY = parseFloat(currentEvent.y);
             const updatedEvent = {
                 ...currentEvent,
                 y: `${currentY + dy}px`,
             };
-            return { ...events, [id]: updatedEvent };
+            return { ...prevEvents, [id]: updatedEvent };
         });
     };
 
     const snapEvent = (id, newY) => {
-        setEvents(events => {
-            const currentEvent = events[id];
+        setEvents(prevEvents => {
+            const currentEvent = prevEvents[id];
             const updatedEvent = {
                 ...currentEvent,
                 y: `${newY}px`,
             };
-            return { ...events, [id]: updatedEvent };
+            return { ...prevEvents, [id]: updatedEvent };
         });
         saveEvents({ ...events, [id]: { ...events[id], y: `${newY}px` } });
     };
 
-    function debounce(func, wait) {
+    const debounce = (func, wait) => {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {
@@ -110,29 +120,29 @@ export function Planner() {
         };
     };
 
-    const saveEvents = debounce(async (events) => {
-        localStorage.setItem('events', JSON.stringify(events));
+    const saveEvents = debounce(async (updatedEvents) => {
+        localStorage.setItem('events', JSON.stringify(updatedEvents));
         try {
             await fetch('/api/events', {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(events),
+                body: JSON.stringify(updatedEvents),
             });
-        } catch {
-            console.log('Failed to save events to the server. Saving locally...');
+        } catch (error) {
+            console.log('Failed to save events to the server. Saving locally...', error);
         }
-    }, 1000); // Debounce the save function to prevent multiple calls in a short time
+    }, 1000);
 
     const clearEvents = () => {
         localStorage.removeItem('events');
         setEvents({});
-        setNextID(0);
+        setNextId(0);
         saveEvents({});
     };
 
     const handleEditEvent = (id) => {
         setShowModal(true);
-        setEditingEvent({ ...events[id] });
+        setEditingEvent(events[id]);
     };
 
     const handleCloseModal = () => {
@@ -148,7 +158,10 @@ export function Planner() {
 
     const handleEventChange = (e) => {
         const { name, value } = e.target;
-        setEditingEvent(prev => ({ ...prev, [name]: value }));
+        setEditingEvent(prevEvent => ({
+            ...prevEvent,
+            [name]: name === 'duration' ? parseInt(value, 10) : value,
+        }));
     };
 
     return (
@@ -160,7 +173,7 @@ export function Planner() {
             <div id="events-container">
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
-                        <div className={"hr"} />
+                        <div className="hr" />
                         <TimeBlock hour={6 + index} onCreateEvent={createEvent} onSnapEvent={snapEvent} />
                         <TimeBlock hour={6 + index + 0.5} onCreateEvent={createEvent} onSnapEvent={snapEvent} isHalf />
                     </React.Fragment>
@@ -218,4 +231,4 @@ export function Planner() {
             </Modal>
         </div>
     );
-};
+}
