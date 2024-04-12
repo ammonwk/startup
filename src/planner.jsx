@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import TimeBlock from './timeblock';
 import Event from './event';
 import './planner.css';
+import { Modal, Button, Form } from 'react-bootstrap';
 
 export function Planner() {
     const [events, setEvents] = useState({});
     const [nextID, setNextID] = useState(0);
     const [quote, setQuote] = useState('Loading quote...');
+    const [showModal, setShowModal] = useState(false);
+    const [editingEvent, setEditingEvent] = useState(null);
 
     useEffect(() => {
         loadEvents();
@@ -28,7 +31,7 @@ export function Planner() {
                 setEvents(localEvents);
                 const maxID = Object.keys(localEvents).length > 0 ? Math.max(...Object.keys(localEvents).map(id => parseInt(id, 10))) : -1;
                 setNextID(maxID + 1);
-            }
+            } // This duplicated code is necessary because of the async fetch request
         } catch (error) {
             console.error('Error loading events:', error);
         }
@@ -118,13 +121,34 @@ export function Planner() {
         } catch {
             console.log('Failed to save events to the server. Saving locally...');
         }
-    }, 1000);
+    }, 1000); // Debounce the save function to prevent multiple calls in a short time
 
     const clearEvents = () => {
         localStorage.removeItem('events');
         setEvents({});
         setNextID(0);
         saveEvents({});
+    };
+
+    const handleEditEvent = (id) => {
+        setShowModal(true);
+        setEditingEvent({ ...events[id] });
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+
+    const handleSaveEvent = () => {
+        if (editingEvent) {
+            updateEvent(editingEvent.id, editingEvent);
+            setShowModal(false);
+        }
+    };
+
+    const handleEventChange = (e) => {
+        const { name, value } = e.target;
+        setEditingEvent(prev => ({ ...prev, [name]: value }));
     };
 
     return (
@@ -147,10 +171,51 @@ export function Planner() {
                         event={event}
                         onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
+                        onEditEvent={handleEditEvent}
                     />
                 ))}
             </div>
             <p className="quote">{quote}</p>
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit Event</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label>Event Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={editingEvent?.name || ''}
+                                onChange={handleEventChange}
+                                name="name"
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Color</Form.Label>
+                            <Form.Control
+                                type="color"
+                                value={editingEvent?.color || '#000000'}
+                                onChange={handleEventChange}
+                                name="color"
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Duration (Minutes)</Form.Label>
+                            <Form.Control
+                                type="number"
+                                value={editingEvent?.duration || 30}
+                                onChange={handleEventChange}
+                                name="duration"
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+                    <Button variant="primary" onClick={handleSaveEvent}>Save Changes</Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };
