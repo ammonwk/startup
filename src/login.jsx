@@ -8,6 +8,7 @@ export function Login() {
     const [password, setPassword] = React.useState('');
     const [showModal, setShowModal] = React.useState(false);
     const [modalMessage, setModalMessage] = React.useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -22,7 +23,7 @@ export function Login() {
             if (response.ok) {
                 localStorage.removeItem('events');
                 localStorage.setItem('userName', username);
-                useNavigate('/planner');
+                navigate('/planner');
             } else {
                 const body = await response.json();
                 setModalMessage(`⚠ Error: ${body.msg}`);

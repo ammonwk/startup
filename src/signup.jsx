@@ -8,6 +8,7 @@ export function Signup() {
     const [password, setPassword] = React.useState('');
     const [showModal, setShowModal] = React.useState(false);
     const [modalMessage, setModalMessage] = React.useState('');
+    const navigate = useNavigate();
 
     const handleSignup = async (event) => {
         event.preventDefault();
@@ -21,7 +22,7 @@ export function Signup() {
 
             if (response.ok) {
                 localStorage.setItem('userName', username);
-                useNavigate('/planner');
+                navigate('/planner');
             } else {
                 const body = await response.json();
                 setModalMessage(`⚠ Error: ${body.msg}`);
