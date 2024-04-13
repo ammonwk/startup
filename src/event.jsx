@@ -19,6 +19,7 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
                 autoScroll: true,
                 listeners: {
                     move(event) {
+                        event.preventDefault(); // Add this line to prevent default touch behavior
                         onMoveEvent(event.target.getAttribute('data-id'), event.dy);
                         setWasDragged(true);
                     },
@@ -40,7 +41,8 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
                         }, 50);
                     },
                 },
-            });
+            })
+            .styleCursor(false); // Add this line to disable the default touch cursor
     }, [event, onMoveEvent, onSnapEvent]);
 
     const handleClick = () => {
