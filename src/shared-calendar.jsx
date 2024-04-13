@@ -308,7 +308,7 @@ export function SharedCalendar() {
                     />
                 ))}
             </div>
-            <p className="quote">{quote}</p>
+            <p className="quote">Fetched Quote: {quote}</p>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Event</Modal.Title>
