@@ -90,8 +90,9 @@ apiRouter.get('/events', async (req, res) => {
     const token = req.cookies.token;
     const user = await db.collection('users').findOne({ token: token });
     if (user) {
-        // Find the events document for this user
-        const userEvents = await db.collection('events').findOne({ userId: user._id });
+        const date = req.query.date; // Get the date from the query parameter
+        // Find the events document for this user and date
+        const userEvents = await db.collection('events').findOne({ userId: user._id, date: date });
         // If the document exists, send it; otherwise, send an empty object
         res.send(userEvents ? userEvents.events : {});
     } else {
@@ -103,15 +104,19 @@ apiRouter.post('/events', async (req, res) => {
     const token = req.cookies.token;
     const user = await db.collection('users').findOne({ token: token });
     if (user) {
+        const date = req.query.date; // Get the date from the query parameter
         const events = req.body;
-        // Update or insert the entire events document for this user
-        await db.collection('events').updateOne({ userId: user._id }, { $set: { events: events, userId: user._id } }, { upsert: true });
+        // Update or insert the events document for this user and date
+        await db.collection('events').updateOne(
+            { userId: user._id, date: date },
+            { $set: { events: events, userId: user._id, date: date } },
+            { upsert: true }
+        );
         res.send(events);
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 });
-
 
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack for debugging

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TimeBlock from './timeblock';
 import Event from './event';
 import './planner.css';
 import { Modal, Button, Form } from 'react-bootstrap';
+import Calendar from 'react-calendar'; // Import from react-calendar
+import 'react-calendar/dist/Calendar.css'; // Import default styles
+import moment from 'moment';
 
 export function Planner() {
     const [events, setEvents] = useState({});
@@ -10,34 +13,39 @@ export function Planner() {
     const [quote, setQuote] = useState('Loading quote...');
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(moment());
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
-        loadEvents();
+        setEvents({});
+        setNextId(0);
+        loadEvents(selectedDate);
         fetchQuote();
-    }, []);
+    }, [selectedDate]);
 
-    const loadEvents = async () => {
+    const loadEvents = async (date) => {
         try {
-            const response = await fetch('/api/events');
+            const response = await fetch(`/api/events?date=${date.format('YYYY-MM-DD')}`);
             if (response.ok) {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
-                localStorage.setItem('events', JSON.stringify(loadedEvents));
+                localStorage.setItem(`events-${date.format('YYYY-MM-DD')}`, JSON.stringify(loadedEvents));
                 const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
                 setNextId(maxId + 1);
             } else {
                 console.log('Failed to load events from the server. Using local data...', response.status);
-                loadLocalEvents();
+                loadLocalEvents(date);
             }
         } catch (error) {
             console.error('Error loading events:', error);
-            loadLocalEvents();
+            loadLocalEvents(date);
         }
     };
 
-    const loadLocalEvents = () => {
+    const loadLocalEvents = (date) => {
         try {
-            const localEvents = JSON.parse(localStorage.getItem('events')) || {};
+            const localEvents = JSON.parse(localStorage.getItem(`events-${date.format('YYYY-MM-DD')}`)) || {};
             setEvents(localEvents);
             const maxId = Object.keys(localEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
             setNextId(maxId + 1);
@@ -121,9 +129,9 @@ export function Planner() {
     };
 
     const saveEvents = debounce(async (updatedEvents) => {
-        localStorage.setItem('events', JSON.stringify(updatedEvents));
+        localStorage.setItem(`events-${selectedDate.format('YYYY-MM-DD')}`, JSON.stringify(updatedEvents));
         try {
-            await fetch('/api/events', {
+            await fetch(`/api/events?date=${selectedDate.format('YYYY-MM-DD')}`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify(updatedEvents),
@@ -134,7 +142,7 @@ export function Planner() {
     }, 1000);
 
     const clearEvents = () => {
-        localStorage.removeItem('events');
+        localStorage.removeItem(`events-${selectedDate.format('YYYY-MM-DD')}`);
         setEvents({});
         setNextId(0);
         saveEvents({});
@@ -164,12 +172,65 @@ export function Planner() {
         }));
     };
 
+    const handleDateChange = (date) => {
+        setSelectedDate(moment(date));
+    };
+
+    const toggleDropdown = () => {
+        setShowDropdown(!showDropdown);
+    };
+
+    const goToToday = () => {
+        setSelectedDate(moment());
+        setShowDropdown(false);
+    };
+
+    // This function gets the start of the current week
+    const getWeekStart = (date) => {
+        return date.clone().startOf('week');
+    };
+
+    // Generate the days for the week view
+    const daysOfWeek = (date) => {
+        let weekStart = getWeekStart(date);
+        return [...Array(7)].map((_, i) => weekStart.clone().add(i, 'days'));
+    };
+
     return (
         <div className="container">
             <h2 className="welcome">Welcome. Please log in.</h2>
             <h3>Weekly Schedule</h3>
             <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
-            <button onClick={clearEvents} className="btn btn-primary">Clear</button>
+            <div className="current-date-view">
+                <Button variant="link" onClick={toggleDropdown}>
+                    {selectedDate.format('MMMM D, YYYY')}
+                </Button>
+                <div className="today-button" onClick={goToToday}>
+                    {moment().date()}
+                </div>
+                {showDropdown && (
+                    <div className="dropdown-calendar" ref={dropdownRef}>
+                        <Calendar
+                            value={selectedDate.toDate()}
+                            onChange={handleDateChange}
+                        />
+                    </div>
+                )}
+            </div>
+            <div className="week-view">
+                {daysOfWeek(selectedDate).map((day) => (
+                    <div
+                        key={day}
+                        className={`day${day.isSame(moment(), 'day') ? ' today' : day.isSame(selectedDate, 'day') ? ' selected-day' : ''}`}
+                        onClick={() => {
+                            handleDateChange(day)
+                        }}
+                    >
+                        {day.format('ddd D')}
+                    </div>
+                ))}
+            </div>
+            <Button variant="danger" onClick={clearEvents}>Clear</Button>
             <div id="events-container">
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
@@ -202,6 +263,7 @@ export function Planner() {
                                 value={editingEvent?.name || ''}
                                 onChange={handleEventChange}
                                 name="name"
+                                autocomplete="off"
                             />
                         </Form.Group>
                         <Form.Group>
