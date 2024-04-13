@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import interact from 'interactjs';
 import PropTypes from 'prop-types';
 
-const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
+const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, setIsDragging }) => {
     const eventRef = useRef(null);
     const [wasDragged, setWasDragged] = useState(false);
 
@@ -18,6 +18,9 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
                 ],
                 autoScroll: true,
                 listeners: {
+                    start() {
+                        setIsDragging(true);
+                    },
                     move(event) {
                         event.preventDefault(); // Add this line to prevent default touch behavior
                         onMoveEvent(event.target.getAttribute('data-id'), event.dy);
@@ -25,6 +28,10 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
                     },
                     end(event) {
                         snapToClosest(event.target);
+                        // after 100ms, set wasDragged to false to prevent click event
+                        setTimeout(() => {
+                            setWasDragged(false);
+                        }, 100);
                     },
                 },
             })
@@ -95,6 +102,7 @@ Event.propTypes = {
     onMoveEvent: PropTypes.func.isRequired,
     onSnapEvent: PropTypes.func.isRequired,
     onEditEvent: PropTypes.func.isRequired,
+    setIsDragging: PropTypes.func.isRequired,
 };
 
 export default Event;

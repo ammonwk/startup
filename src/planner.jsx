@@ -15,6 +15,7 @@ export function Planner() {
     const [editingEvent, setEditingEvent] = useState(null);
     const [selectedDate, setSelectedDate] = useState(moment());
     const [showDropdown, setShowDropdown] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -263,8 +264,19 @@ export function Planner() {
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
                         <div className="hr" />
-                        <TimeBlock hour={6 + index} onCreateEvent={createEvent} onSnapEvent={snapEvent} />
-                        <TimeBlock hour={6 + index + 0.5} onCreateEvent={createEvent} onSnapEvent={snapEvent} isHalf />
+                        <TimeBlock
+                            hour={6 + index}
+                            onCreateEvent={createEvent}
+                            onSnapEvent={snapEvent}
+                            isDragging={isDragging}
+                        />
+                        <TimeBlock
+                            hour={6 + index + 0.5}
+                            onCreateEvent={createEvent}
+                            onSnapEvent={snapEvent}
+                            isHalf
+                            isDragging={isDragging}
+                        />
                     </React.Fragment>
                 ))}
                 {Object.values(events).map(event => (
@@ -274,6 +286,7 @@ export function Planner() {
                         onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
                         onEditEvent={handleEditEvent}
+                        setIsDragging={setIsDragging}
                     />
                 ))}
             </div>

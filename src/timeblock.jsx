@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const TimeBlock = ({ hour, onCreateEvent, onSnapEvent, isHalf }) => {
+const TimeBlock = ({ hour, onCreateEvent, onSnapEvent, isHalf, isDragging }) => {
     const handleClick = () => {
-        onCreateEvent(hour);
+        if (!isDragging) {
+            onCreateEvent(hour);
+        }
     };
 
     return (
@@ -22,6 +24,7 @@ TimeBlock.propTypes = {
     onCreateEvent: PropTypes.func.isRequired,
     onSnapEvent: PropTypes.func.isRequired,
     isHalf: PropTypes.bool,
+    isDragging: PropTypes.bool.isRequired,
 };
 
 TimeBlock.defaultProps = {
