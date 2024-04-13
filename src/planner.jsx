@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import TimeBlock from './timeblock';
-import Event from './event';
-import './planner.css';
-import { Modal, Button, Form } from 'react-bootstrap';
-import Calendar from 'react-calendar'; // Import from react-calendar
-import 'react-calendar/dist/Calendar.css'; // Import default styles
-import moment from 'moment';
+import React, { useState, useEffect, useRef } from "react";
+import TimeBlock from "./timeblock";
+import Event from "./event";
+import "./planner.css";
+import { Modal, Button, Form } from "react-bootstrap";
+import Calendar from "react-calendar"; // Import from react-calendar
+import "react-calendar/dist/Calendar.css"; // Import default styles
+import moment from "moment";
 
 export function Planner() {
     const [events, setEvents] = useState({});
     const [nextId, setNextId] = useState(0);
-    const [quote, setQuote] = useState('Loading quote...');
+    const [quote, setQuote] = useState("Loading quote...");
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [selectedDate, setSelectedDate] = useState(moment());
@@ -27,74 +27,74 @@ export function Planner() {
 
     const loadEvents = async (date) => {
         try {
-            const response = await fetch(`/api/events?date=${date.format('YYYY-MM-DD')}`);
+            const response = await fetch(`/api/events?date=${date.format("YYYY-MM-DD")}`);
             if (response.ok) {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
-                localStorage.setItem(`events-${date.format('YYYY-MM-DD')}`, JSON.stringify(loadedEvents));
+                localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
                 const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
                 setNextId(maxId + 1);
             } else {
-                console.log('Failed to load events from the server. Using local data...', response.status);
+                console.log("Failed to load events from the server. Using local data...", response.status);
                 loadLocalEvents(date);
             }
         } catch (error) {
-            console.error('Error loading events:', error);
+            console.error("Error loading events:", error);
             loadLocalEvents(date);
         }
     };
 
     const loadLocalEvents = (date) => {
         try {
-            const localEvents = JSON.parse(localStorage.getItem(`events-${date.format('YYYY-MM-DD')}`)) || {};
+            const localEvents = JSON.parse(localStorage.getItem(`events-${date.format("YYYY-MM-DD")}`)) || {};
             setEvents(localEvents);
             const maxId = Object.keys(localEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
             setNextId(maxId + 1);
         } catch (error) {
-            console.error('Error parsing local events:', error);
+            console.error("Error parsing local events:", error);
         }
     };
 
     const fetchQuote = async () => {
         try {
-            const response = await fetch('https://api.api-ninjas.com/v1/quotes?category=faith', {
-                method: 'GET',
+            const response = await fetch("https://api.api-ninjas.com/v1/quotes?category=faith", {
+                method: "GET",
                 headers: {
-                    'X-Api-Key': 'mSk7rfR5LnbL1FtY21YE8Q==pDgGWJtNnmVdIInG',
-                    'Content-Type': 'application/json'
-                }
+                    "X-Api-Key": "mSk7rfR5LnbL1FtY21YE8Q==pDgGWJtNnmVdIInG",
+                    "Content-Type": "application/json",
+                },
             });
             if (response.ok) {
                 const result = await response.json();
                 setQuote(`"${result[0].quote}" - ${result[0].author}.`);
             } else {
-                throw new Error('Network response was not ok', response.status);
+                throw new Error("Network response was not ok", response.status);
             }
         } catch (error) {
-            console.error('Error fetching quote:', error);
+            console.error("Error fetching quote:", error);
         }
     };
 
     const createEvent = (hour) => {
         const newEvent = {
             id: nextId,
-            name: 'Click to change the event name.',
+            name: "Click to change the event name.",
             y: `${(hour - 6) * 68}px`,
-            color: '#ffffff',
+            color: "#ffffff",
             duration: 30,
         };
-        setEvents(prevEvents => ({ ...prevEvents, [nextId]: newEvent }));
-        setNextId(prevId => prevId + 1);
+        setEvents((prevEvents) => ({ ...prevEvents, [nextId]: newEvent }));
+        setNextId((prevId) => prevId + 1);
         saveEvents({ ...events, [nextId]: newEvent });
     };
 
     const updateEvent = (id, updatedEvent) => {
-        setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
+        setEvents((prevEvents) => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
 
     const moveEvent = (id, dy) => {
-        setEvents(prevEvents => {
+        setEvents((prevEvents) => {
             const currentEvent = prevEvents[id];
             const currentY = parseFloat(currentEvent.y);
             const updatedEvent = {
@@ -106,7 +106,7 @@ export function Planner() {
     };
 
     const snapEvent = (id, newY) => {
-        setEvents(prevEvents => {
+        setEvents((prevEvents) => {
             const currentEvent = prevEvents[id];
             const updatedEvent = {
                 ...currentEvent,
@@ -118,20 +118,20 @@ export function Planner() {
     };
 
     async function saveEvents(updatedEvents) {
-        localStorage.setItem(`events-${selectedDate.format('YYYY-MM-DD')}`, JSON.stringify(updatedEvents));
+        localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
         try {
-            await fetch(`/api/events?date=${selectedDate.format('YYYY-MM-DD')}`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
+            await fetch(`/api/events?date=${selectedDate.format("YYYY-MM-DD")}`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
                 body: JSON.stringify(updatedEvents),
             });
         } catch (error) {
-            console.log('Failed to save events to the server. Saving locally...', error);
+            console.log("Failed to save events to the server. Saving locally...", error);
         }
-    };
+    }
 
     const clearEvents = () => {
-        localStorage.removeItem(`events-${selectedDate.format('YYYY-MM-DD')}`);
+        localStorage.removeItem(`events-${selectedDate.format("YYYY-MM-DD")}`);
         setEvents({});
         setNextId(0);
         saveEvents({});
@@ -155,9 +155,9 @@ export function Planner() {
 
     const handleEventChange = (e) => {
         const { name, value } = e.target;
-        setEditingEvent(prevEvent => ({
+        setEditingEvent((prevEvent) => ({
             ...prevEvent,
-            [name]: name === 'duration' ? parseInt(value, 10) : value,
+            [name]: name === "duration" ? parseInt(value, 10) : value,
         }));
     };
 
@@ -176,10 +176,10 @@ export function Planner() {
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [dropdownRef]);
 
@@ -190,21 +190,21 @@ export function Planner() {
 
     // This function gets the start of the current week
     const getWeekStart = (date) => {
-        return date.clone().startOf('week');
+        return date.clone().startOf("week");
     };
 
     // Generate the days for the week view
     const daysOfWeek = (date) => {
         let weekStart = getWeekStart(date);
-        return [...Array(7)].map((_, i) => weekStart.clone().add(i, 'days'));
+        return [...Array(7)].map((_, i) => weekStart.clone().add(i, "days"));
     };
 
     const goToPreviousWeek = () => {
-        setSelectedDate(prevDate => prevDate.clone().subtract(1, 'week'));
+        setSelectedDate((prevDate) => prevDate.clone().subtract(1, "week"));
     };
 
     const goToNextWeek = () => {
-        setSelectedDate(prevDate => prevDate.clone().add(1, 'week'));
+        setSelectedDate((prevDate) => prevDate.clone().add(1, "week"));
     };
 
     const handleDeleteEvent = () => {
@@ -219,22 +219,27 @@ export function Planner() {
 
     return (
         <div className="container">
-            <h2 className="welcome">Welcome{localStorage.getItem('userName') ? `, ${localStorage.getItem('userName')}.` : '. Please log in to save your events.'}</h2>
+            <h2 className="welcome">
+                Welcome
+                {localStorage.getItem("userName")
+                    ? `, ${localStorage.getItem("userName")}.`
+                    : ". Please log in to save your events."}
+            </h2>
             <h3>Weekly Schedule</h3>
-            <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
+            <p>
+                Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events
+                you've just made.
+            </p>
             <div className="current-date-view">
                 <Button variant="link" onClick={toggleDropdown}>
-                    {selectedDate.format('MMMM D, YYYY')} <i className="arrow down"></i>
+                    {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
                 </Button>
                 <div className="today-button" onClick={goToToday}>
                     Go To Today: {moment().date()}
                 </div>
                 {showDropdown && (
                     <div className="dropdown-calendar" ref={dropdownRef}>
-                        <Calendar
-                            value={selectedDate.toDate()}
-                            onChange={handleDateChange}
-                        />
+                        <Calendar value={selectedDate.toDate()} onChange={handleDateChange} />
                     </div>
                 )}
             </div>
@@ -246,12 +251,12 @@ export function Planner() {
                     {daysOfWeek(selectedDate).map((day) => (
                         <div
                             key={day}
-                            className={`day${day.isSame(moment(), 'day') ? ' today' : day.isSame(selectedDate, 'day') ? ' selected-day' : ''}`}
+                            className={`day${day.isSame(moment(), "day") ? " today" : day.isSame(selectedDate, "day") ? " selected-day" : ""}`}
                             onClick={() => {
-                                handleDateChange(day)
+                                handleDateChange(day);
                             }}
                         >
-                            {day.format('ddd D')}
+                            {day.format("ddd D")}
                         </div>
                     ))}
                 </div>
@@ -264,12 +269,7 @@ export function Planner() {
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
                         <div className="hr" />
-                        <TimeBlock
-                            hour={6 + index}
-                            onCreateEvent={createEvent}
-                            onSnapEvent={snapEvent}
-                            isDragging={isDragging}
-                        />
+                        <TimeBlock hour={6 + index} onCreateEvent={createEvent} onSnapEvent={snapEvent} isDragging={isDragging} />
                         <TimeBlock
                             hour={6 + index + 0.5}
                             onCreateEvent={createEvent}
@@ -279,7 +279,7 @@ export function Planner() {
                         />
                     </React.Fragment>
                 ))}
-                {Object.values(events).map(event => (
+                {Object.values(events).map((event) => (
                     <Event
                         key={event.id}
                         event={event}
@@ -301,7 +301,7 @@ export function Planner() {
                             <Form.Label>Event Name</Form.Label>
                             <Form.Control
                                 type="text"
-                                value={editingEvent?.name || ''}
+                                value={editingEvent?.name || ""}
                                 onChange={handleEventChange}
                                 name="name"
                                 autoComplete="off"
@@ -311,7 +311,7 @@ export function Planner() {
                             <Form.Label>Color</Form.Label>
                             <Form.Control
                                 type="color"
-                                value={editingEvent?.color || '#000000'}
+                                value={editingEvent?.color || "#000000"}
                                 onChange={handleEventChange}
                                 name="color"
                             />
@@ -328,9 +328,15 @@ export function Planner() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
-                    <Button variant="danger" onClick={handleDeleteEvent}>Delete Event</Button>
-                    <Button variant="primary" onClick={handleSaveEvent}>Save Changes</Button>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        Close
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteEvent}>
+                        Delete Event
+                    </Button>
+                    <Button variant="primary" onClick={handleSaveEvent}>
+                        Save Changes
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </div>
