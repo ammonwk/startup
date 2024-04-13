@@ -40,6 +40,9 @@ export function Header({ isLoggedIn, setIsLoggedIn }) {
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/planner">Planner</NavLink>
                             </li>
+                            <li className="nav-item">
+                                <NavLink className="nav-link" to="/share">CS 260 Shared Calendar</NavLink>
+                            </li>
                             {!isLoggedIn && (
                                 <>
                                     <li className="nav-item">
@@ -78,6 +81,7 @@ export function Footer() {
                 <ul className="nav">
                     <li className="nav-item"><NavLink to="/" className="nav-link px-2 text-muted">Home</NavLink></li>
                     <li className="nav-item"><NavLink to="/planner" className="nav-link px-2 text-muted">Planner</NavLink></li>
+                    <li className="nav-item"><NavLink className="nav-link" to="/share">CS 260 Shared Calendar</NavLink></li>
                     <li className="nav-item"><NavLink to="/login" className="nav-link px-2 text-muted">Login</NavLink></li>
                     <li className="nav-item"><NavLink to="/signup" className="nav-link px-2 me-2 text-muted">Sign up</NavLink></li>
                 </ul>
@@ -94,13 +98,13 @@ export function LiveUsers() {
         const ws = new WebSocket(wsScheme + "://" + window.location.host + "/path");
 
         ws.onopen = function () {
-            console.log("Connected to WebSocket");
+            // console.log("Connected to WebSocket");
             // Check if a username is stored, otherwise set it to "anonymous"
             const username = localStorage.getItem("userName") || "anonymous";
             ws.send(JSON.stringify({ type: 'setUsername', username: username }));
         };
         ws.onmessage = function (event) {
-            console.log("Message from server:", event.data);
+            // console.log("Message from server:", event.data);
             const message = JSON.parse(event.data);
             if (message.type === 'userList') {
                 setUsers(message.usernames);

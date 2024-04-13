@@ -118,6 +118,24 @@ apiRouter.post('/events', async (req, res) => {
     }
 });
 
+// Get and set shared events
+apiRouter.get('/shared-events', async (req, res) => {
+    const date = req.query.date;
+    const sharedEvents = await db.collection('sharedEvents').findOne({ date: date });
+    res.send(sharedEvents ? sharedEvents.events : {});
+});
+
+apiRouter.post('/shared-events', async (req, res) => {
+    const date = req.query.date;
+    const events = req.body;
+    await db.collection('sharedEvents').updateOne(
+        { date: date },
+        { $set: { events: events, date: date } },
+        { upsert: true }
+    );
+    res.send(events);
+});
+
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack for debugging
     res.status(500).send('Something broke!'); // Send a generic error message

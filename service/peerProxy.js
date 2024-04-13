@@ -17,6 +17,15 @@ function peerProxy(httpServer) {
     });
   }
 
+  function broadcastSharedEvents(date) {
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === 1) {
+        client.send(JSON.stringify({ type: 'sharedCalendarUpdated', date: date }));
+      }
+    });
+  }
+
+
   // Handle the protocol upgrade from HTTP to WebSocket
   httpServer.on('upgrade', (request, socket, head) => {
     wss.handleUpgrade(request, socket, head, function done(ws) {
@@ -32,16 +41,32 @@ function peerProxy(httpServer) {
     broadcastUsers();
     console.log('WebSocket connection established', connections.length, 'clients connected')
 
-    ws.on('message', (message) => {
-      const data = JSON.parse(message);
-      if (data.type === 'setUsername') {
+    ws.on('message', async (message) => {
+      let parsedMessage;
+      try {
+        parsedMessage = JSON.parse(message);
+      } catch (error) {
+        console.error('Error parsing message', error);
+        return;
+      }
+
+      if (parsedMessage.type === 'sharedCalendarUpdated') {
+        try {
+          // read the date from the message
+          const date = parsedMessage.date;
+          broadcastSharedEvents(date);
+        } catch (error) {
+          console.error('Database operation failed', error);
+        }
+      } else {
         const pos = connections.findIndex((o) => o.id === connection.id);
         if (pos !== -1) {
-          connections[pos].username = data.username;
+          connections[pos].username = parsedMessage.username;
           broadcastUsers();
         }
       }
     });
+
 
 
     // Remove the closed connection so we don't try to forward anymore
