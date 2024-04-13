@@ -238,8 +238,7 @@ export function SharedCalendar() {
 
     return (
         <div className="container">
-            <h2 className="welcome">Welcome{localStorage.getItem('userName') ? `, ${localStorage.getItem('userName')}.` : '. Please log in to save your events.'}</h2>
-            <h3>You're on the Shared CS 260 Calendar</h3>
+            <h2>Welcome{localStorage.getItem('userName') ? `, ${localStorage.getItem('userName')},` : ','} You're on the Shared CS 260 Calendar</h2>
             <p>Your changes are automatically synced with everyone else using the Calendar.</p>
             <div className="current-date-view">
                 <Button variant="link" onClick={toggleDropdown}>

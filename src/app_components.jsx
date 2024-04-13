@@ -81,7 +81,7 @@ export function Footer() {
                 <ul className="nav">
                     <li className="nav-item"><NavLink to="/" className="nav-link px-2 text-muted">Home</NavLink></li>
                     <li className="nav-item"><NavLink to="/planner" className="nav-link px-2 text-muted">Planner</NavLink></li>
-                    <li className="nav-item"><NavLink className="nav-link" to="/share">CS 260 Shared Calendar</NavLink></li>
+                    <li className="nav-item"><NavLink to="/share" className="nav-link px-2 text-muted">CS 260 Shared Calendar</NavLink></li>
                     <li className="nav-item"><NavLink to="/login" className="nav-link px-2 text-muted">Login</NavLink></li>
                     <li className="nav-item"><NavLink to="/signup" className="nav-link px-2 me-2 text-muted">Sign up</NavLink></li>
                 </ul>

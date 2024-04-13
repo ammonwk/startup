@@ -177,3 +177,7 @@ div.hr {
     border: 1px solid #888;
     width: 90%;
 }
+
+.nav-link {
+    margin: 0 0.25em;
+}
