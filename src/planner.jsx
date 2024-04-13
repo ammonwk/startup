@@ -116,19 +116,7 @@ export function Planner() {
         saveEvents({ ...events, [id]: { ...events[id], y: `${newY}px` } });
     };
 
-    const debounce = (func, wait) => {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    };
-
-    const saveEvents = debounce(async (updatedEvents) => {
+    async function saveEvents(updatedEvents) {
         localStorage.setItem(`events-${selectedDate.format('YYYY-MM-DD')}`, JSON.stringify(updatedEvents));
         try {
             await fetch(`/api/events?date=${selectedDate.format('YYYY-MM-DD')}`, {
@@ -139,7 +127,7 @@ export function Planner() {
         } catch (error) {
             console.log('Failed to save events to the server. Saving locally...', error);
         }
-    }, 1000);
+    };
 
     const clearEvents = () => {
         localStorage.removeItem(`events-${selectedDate.format('YYYY-MM-DD')}`);
