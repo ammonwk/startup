@@ -198,6 +198,14 @@ export function Planner() {
         return [...Array(7)].map((_, i) => weekStart.clone().add(i, 'days'));
     };
 
+    const goToPreviousWeek = () => {
+        setSelectedDate(prevDate => prevDate.clone().subtract(1, 'week'));
+    };
+
+    const goToNextWeek = () => {
+        setSelectedDate(prevDate => prevDate.clone().add(1, 'week'));
+    };
+
     const handleDeleteEvent = () => {
         if (editingEvent) {
             const updatedEvents = { ...events };
@@ -229,20 +237,28 @@ export function Planner() {
                     </div>
                 )}
             </div>
-            <div className="week-view">
-                {daysOfWeek(selectedDate).map((day) => (
-                    <div
-                        key={day}
-                        className={`day${day.isSame(moment(), 'day') ? ' today' : day.isSame(selectedDate, 'day') ? ' selected-day' : ''}`}
-                        onClick={() => {
-                            handleDateChange(day)
-                        }}
-                    >
-                        {day.format('ddd D')}
-                    </div>
-                ))}
+            <div className="week-navigation">
+                <Button variant="link" onClick={goToPreviousWeek}>
+                    <i className="arrow left"></i>
+                </Button>
+                <div className="week-view">
+                    {daysOfWeek(selectedDate).map((day) => (
+                        <div
+                            key={day}
+                            className={`day${day.isSame(moment(), 'day') ? ' today' : day.isSame(selectedDate, 'day') ? ' selected-day' : ''}`}
+                            onClick={() => {
+                                handleDateChange(day)
+                            }}
+                        >
+                            {day.format('ddd D')}
+                        </div>
+                    ))}
+                </div>
+                <Button variant="link" onClick={goToNextWeek}>
+                    <i className="arrow right"></i>
+                </Button>
             </div>
-            <Button variant="danger" onClick={clearEvents}>Clear</Button>
+            {/* <Button variant="danger" onClick={clearEvents}>Clear</Button> */}
             <div id="events-container">
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
