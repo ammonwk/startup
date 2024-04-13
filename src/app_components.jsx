@@ -1,14 +1,28 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
-import { NavLink } from 'react-router-dom';
+import { BrowserRouter, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
 
 
 export function NotFound() {
     return <main className='container-fluid bg-secondary text-center'>Error 404: Address unknown.</main>;
 }
 
-export function Header() {
+export function Header({ isLoggedIn, setIsLoggedIn }) {
+    const navigate = useNavigate();
+    // const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+    React.useEffect(() => {
+        const userName = localStorage.getItem('userName');
+        setIsLoggedIn(!!userName);
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('userName');
+        setIsLoggedIn(false);
+        navigate('/login');
+    };
+
     return (
         <header>
             <nav className="navbar navbar-expand-sm navbar-light bg-white border-bottom mx-3 my-2">
@@ -26,18 +40,26 @@ export function Header() {
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/planner">Planner</NavLink>
                             </li>
-                            <li className="nav-item">
-                                <NavLink className="nav-link me-2" to="/login">Login</NavLink>
-                            </li>
+                            {!isLoggedIn && (
+                                <>
+                                    <li className="nav-item">
+                                        <NavLink className="nav-link me-2" to="/login">Login</NavLink>
+                                    </li>
+                                    <NavLink className="btn btn-outline-primary" to="/signup">Sign up</NavLink>
+                                </>
+                            )}
+                            {isLoggedIn && (
+                                <li className="nav-item">
+                                    <button className="btn btn-outline-secondary" onClick={handleLogout}>Logout</button>
+                                </li>
+                            )}
                         </ul>
-                        <NavLink className="btn btn-outline-primary" to="/signup">Sign up</NavLink>
                     </div>
                 </div>
             </nav>
         </header>
     );
 }
-
 export function Footer() {
     return (
         <footer className="mt-auto bg-light d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">

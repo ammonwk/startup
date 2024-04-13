@@ -3,7 +3,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, NavLink } from 'react-router-dom';
 
-export function Login() {
+export function Login({ setIsLoggedIn }) {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [showModal, setShowModal] = React.useState(false);
@@ -23,6 +23,7 @@ export function Login() {
             if (response.ok) {
                 localStorage.removeItem('events');
                 localStorage.setItem('userName', username);
+                setIsLoggedIn(true);
                 navigate('/planner');
             } else {
                 const body = await response.json();

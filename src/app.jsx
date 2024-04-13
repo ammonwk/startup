@@ -9,15 +9,16 @@ import { Signup } from './signup';
 import { Header, Footer, NotFound, LiveUsers } from './app_components';
 
 export default function App() {
+    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
     return (
         <>
             <BrowserRouter>
                 <div className="main-container">
-                    <Header />
+                    <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/planner" element={<Planner />} />
-                        <Route path="/login" element={<Login />} />
+                        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
