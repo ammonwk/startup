@@ -210,6 +210,16 @@ export function Planner() {
         return [...Array(7)].map((_, i) => weekStart.clone().add(i, 'days'));
     };
 
+    const handleDeleteEvent = () => {
+        if (editingEvent) {
+            const updatedEvents = { ...events };
+            delete updatedEvents[editingEvent.id];
+            setEvents(updatedEvents);
+            saveEvents(updatedEvents);
+            setShowModal(false);
+        }
+    };
+
     return (
         <div className="container">
             <h2 className="welcome">Welcome. Please log in.</h2>
@@ -297,6 +307,9 @@ export function Planner() {
                                 onChange={handleEventChange}
                                 name="duration"
                             />
+                        </Form.Group>
+                        <Form.Group>
+                            <Button variant="danger" onClick={handleDeleteEvent}>Delete Event</Button>
                         </Form.Group>
                     </Form>
                 </Modal.Body>
