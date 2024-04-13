@@ -78,7 +78,7 @@ export function Planner() {
         const newEvent = {
             id: nextId,
             name: 'Click to change the event name.',
-            y: `${(hour - 6) * 60}px`,
+            y: `${(hour - 6) * 68}px`,
             color: '#ffffff',
             duration: 30,
         };
@@ -226,7 +226,7 @@ export function Planner() {
                     {selectedDate.format('MMMM D, YYYY')} <i className="arrow down"></i>
                 </Button>
                 <div className="today-button" onClick={goToToday}>
-                    {moment().date()}
+                    Go To Today: {moment().date()}
                 </div>
                 {showDropdown && (
                     <div className="dropdown-calendar" ref={dropdownRef}>

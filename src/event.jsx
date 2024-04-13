@@ -24,26 +24,36 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent }) => {
                         setWasDragged(true);
                     },
                     end(event) {
-                        const eventRect = event.target.getBoundingClientRect();
-                        const timeBlocks = document.querySelectorAll('.time-block');
-                        const closest = Array.from(timeBlocks).reduce((prev, curr) => {
-                            const currRect = curr.getBoundingClientRect();
-                            const currDist = Math.abs(currRect.top - eventRect.top);
-                            const prevDist = Math.abs(prev.getBoundingClientRect().top - eventRect.top);
-                            return currDist < prevDist ? curr : prev;
-                        });
-                        if (closest) {
-                            const newY = closest.offsetTop;
-                            onSnapEvent(event.target.getAttribute('data-id'), newY);
-                        }
-                        setTimeout(() => {
-                            setWasDragged(false);
-                        }, 50);
+                        snapToClosest(event.target);
                     },
                 },
             })
             .styleCursor(false); // Add this line to disable the default touch cursor
     }, [event, onMoveEvent, onSnapEvent]);
+
+    const snapToClosest = (target) => {
+        const eventRect = target.getBoundingClientRect();
+        const timeBlocks = document.querySelectorAll('.time-block');
+        const closest = Array.from(timeBlocks).reduce((prev, curr) => {
+            const currRect = curr.getBoundingClientRect();
+            const currDist = Math.abs(currRect.top - eventRect.top);
+            const prevDist = Math.abs(prev.getBoundingClientRect().top - eventRect.top);
+            return currDist < prevDist ? curr : prev;
+        });
+        if (closest) {
+            const newY = closest.offsetTop;
+            onSnapEvent(target.getAttribute('data-id'), newY);
+        }
+        setTimeout(() => {
+            setWasDragged(false);
+        }, 50);
+    };
+
+    // Snap to closest time block when event is created
+
+    useEffect(() => {
+        snapToClosest(eventRef.current);
+    }, []);
 
     const handleClick = () => {
         if (!wasDragged) {
