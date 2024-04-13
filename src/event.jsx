@@ -2,9 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import interact from 'interactjs';
 import PropTypes from 'prop-types';
 
-const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, setIsDragging }) => {
+const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIsDragging }) => {
     const eventRef = useRef(null);
-    const [wasDragged, setWasDragged] = useState(false);
 
     useEffect(() => {
         interact(eventRef.current)
@@ -24,14 +23,9 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, setIsDragging }) 
                     move(event) {
                         event.preventDefault(); // Add this line to prevent default touch behavior
                         onMoveEvent(event.target.getAttribute('data-id'), event.dy);
-                        setWasDragged(true);
                     },
                     end(event) {
                         snapToClosest(event.target);
-                        // after 100ms, set wasDragged to false to prevent click event
-                        setTimeout(() => {
-                            setWasDragged(false);
-                        }, 100);
                     },
                 },
             })
@@ -52,7 +46,7 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, setIsDragging }) 
             onSnapEvent(target.getAttribute('data-id'), newY);
         }
         setTimeout(() => {
-            setWasDragged(false);
+            setIsDragging(false);
         }, 50);
     };
 
@@ -63,7 +57,7 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, setIsDragging }) 
     }, []);
 
     const handleClick = () => {
-        if (!wasDragged) {
+        if (!isDragging) {
             onEditEvent(event.id);
         }
     };
@@ -102,6 +96,7 @@ Event.propTypes = {
     onMoveEvent: PropTypes.func.isRequired,
     onSnapEvent: PropTypes.func.isRequired,
     onEditEvent: PropTypes.func.isRequired,
+    isDragging: PropTypes.bool.isRequired,
     setIsDragging: PropTypes.func.isRequired,
 };
 

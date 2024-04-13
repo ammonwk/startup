@@ -295,6 +295,7 @@ export function Planner() {
                         onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
                         onEditEvent={handleEditEvent}
+                        isDragging={isDragging}
                         setIsDragging={setIsDragging}
                     />
                 ))}
