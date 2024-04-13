@@ -180,6 +180,20 @@ export function Planner() {
         setShowDropdown(!showDropdown);
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [dropdownRef]);
+
     const goToToday = () => {
         setSelectedDate(moment());
         setShowDropdown(false);
@@ -203,7 +217,7 @@ export function Planner() {
             <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
             <div className="current-date-view">
                 <Button variant="link" onClick={toggleDropdown}>
-                    {selectedDate.format('MMMM D, YYYY')}
+                    {selectedDate.format('MMMM D, YYYY')} <i className="arrow down"></i>
                 </Button>
                 <div className="today-button" onClick={goToToday}>
                     {moment().date()}
@@ -263,7 +277,7 @@ export function Planner() {
                                 value={editingEvent?.name || ''}
                                 onChange={handleEventChange}
                                 name="name"
-                                autocomplete="off"
+                                autoComplete="off"
                             />
                         </Form.Group>
                         <Form.Group>
