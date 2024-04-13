@@ -77,7 +77,7 @@ export function Planner() {
     const createEvent = (hour) => {
         const newEvent = {
             id: nextId,
-            name: 'New Event',
+            name: 'Click to change the event name.',
             y: `${(hour - 6) * 60}px`,
             color: '#ffffff',
             duration: 30,
@@ -210,7 +210,7 @@ export function Planner() {
 
     return (
         <div className="container">
-            <h2 className="welcome">Welcome. Please log in.</h2>
+            <h2 className="welcome">Welcome{localStorage.getItem('userName') ? `, ${localStorage.getItem('userName')}.` : '. Please log in to save your events.'}</h2>
             <h3>Weekly Schedule</h3>
             <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
             <div className="current-date-view">
@@ -296,13 +296,11 @@ export function Planner() {
                                 name="duration"
                             />
                         </Form.Group>
-                        <Form.Group>
-                            <Button variant="danger" onClick={handleDeleteEvent}>Delete Event</Button>
-                        </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+                    <Button variant="danger" onClick={handleDeleteEvent}>Delete Event</Button>
                     <Button variant="primary" onClick={handleSaveEvent}>Save Changes</Button>
                 </Modal.Footer>
             </Modal>
