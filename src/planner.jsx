@@ -6,6 +6,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import Calendar from "react-calendar"; // Import from react-calendar
 import "react-calendar/dist/Calendar.css"; // Import default styles
 import moment from "moment";
+import { NavLink } from "react-router-dom";
 
 export function Planner() {
     const [events, setEvents] = useState({});
@@ -226,10 +227,18 @@ export function Planner() {
                     : ". Please log in to save your events."}
             </h2>
             <h3>Weekly Schedule</h3>
-            <p>
-                Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events
-                you've just made.
-            </p>
+            <div>
+                {localStorage.getItem("userName")
+                    ? <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
+                    : <div>
+                        <div className="alert alert-danger" role="alert">
+                            WATCH OUT: You are not logged in. Your changes will not be saved. <NavLink to="/login">Log in</NavLink> or <NavLink to="/signup">sign up</NavLink> to save your events.
+                        </div>
+                    </div>
+                }
+            </div>
+
+
             <div className="current-date-view">
                 <Button variant="link" onClick={toggleDropdown}>
                     {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
