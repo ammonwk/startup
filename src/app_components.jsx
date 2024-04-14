@@ -2,7 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
 import { BrowserRouter, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
-
+import { useSettings } from './settings-provider';
 
 export function NotFound() {
     return <main className='container-fluid bg-secondary text-center'>Error 404: Address unknown.</main>;
@@ -42,6 +42,9 @@ export function Header({ isLoggedIn, setIsLoggedIn }) {
                             </li>
                             <li className="nav-item">
                                 <NavLink className="nav-link" to="/share">CS 260 Shared Calendar</NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <SettingsDropdown />
                             </li>
                             {!isLoggedIn && (
                                 <>
@@ -123,6 +126,37 @@ export function LiveUsers() {
                     <li key={index} className="dropdown-item">{username}</li>
                 ))}
             </ul>
+        </div>
+    );
+}
+
+function SettingsDropdown() {
+    const { settings, changeSetting } = useSettings();
+
+    return (
+        <div className="dropdown settings-dropdown">
+            <button className="btn dropdown-toggle" type="button"
+                id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Settings
+            </button>
+            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <form className="px-4 py-3">
+                    <div className="mb-3">
+                        <label htmlFor="themeSelector" className="form-label">
+                            Theme:
+                        </label>
+                        <select
+                            id="themeSelector"
+                            className="form-select"
+                            value={settings.theme}
+                            onChange={(e) => changeSetting('theme', e.target.value)}
+                        >
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
