@@ -138,14 +138,15 @@ div.hr {
 .container {
     padding: 0px;
     text-align: center;
-    max-width: 400px;
+    max-width: var(--planner-width);
 }
 
 #events-container {
     background-color: var(--event-bg-color);
     position: relative;
     overflow: hidden;
-    max-width: 400px;
+    width: 100%;
+    /* max-width: auto; */
 }
 
 .event {
@@ -202,8 +203,18 @@ div.hr {
 }
 
 .week-navigation {
-    max-width: 410px;
-    margin: 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+    margin: 0;
+    overflow: visible;
+}
+
+.week-navigation button,
+.week-navigation .week-view {
+    flex: 1 1 auto;
+    /* Flex-grow, flex-shrink and flex-basis set to auto */
 }
 
 .week-view {
@@ -214,7 +225,10 @@ div.hr {
 
 .week-view .day {
     cursor: pointer;
-    padding: 5px 5px;
+    /* padding: 5px 5px; */
+    /* Expand to fill flex space */
+    flex: 1 1 auto;
+    max-width: 4em;
     text-align: center;
 }
 
@@ -229,6 +243,11 @@ div.hr {
     background-color: var(--border-color);
     color: var(--text-color);
     border-radius: 4px;
+}
+
+.planner-arrow {
+    padding: 0;
+    margin: 0;
 }
 
 .today-button {

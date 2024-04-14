@@ -134,6 +134,7 @@ apiRouter.post('/settings', async (req, res) => {
     const user = await db.collection('users').findOne({ token: token });
     if (user) {
         const newSettings = req.body;
+        delete newSettings._id; // Ensure _id is not included
         await db.collection('settings').updateOne(
             { userId: user._id },
             { $set: newSettings },
@@ -144,6 +145,7 @@ apiRouter.post('/settings', async (req, res) => {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 });
+
 
 // Get and set shared events
 apiRouter.get('/shared-events', async (req, res) => {

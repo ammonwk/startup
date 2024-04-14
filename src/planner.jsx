@@ -212,7 +212,7 @@ export function Planner({ selectedDate, setSelectedDate }) {
                 )}
             </div>
             <div className="week-navigation">
-                <Button variant="link" onClick={goToPreviousWeek}>
+                <Button className="planner-arrow" variant="link" onClick={goToPreviousWeek}>
                     <i className="arrow left"></i>
                 </Button>
                 <div className="week-view">
@@ -224,11 +224,13 @@ export function Planner({ selectedDate, setSelectedDate }) {
                                 handleDateChange(day);
                             }}
                         >
-                            {day.format("ddd D")}
+                            {day.format("ddd")}
+                            <br></br>
+                            {day.format("D")}
                         </div>
                     ))}
                 </div>
-                <Button variant="link" onClick={goToNextWeek}>
+                <Button className="planner-arrow" variant="link" onClick={goToNextWeek}>
                     <i className="arrow right"></i>
                 </Button>
             </div>

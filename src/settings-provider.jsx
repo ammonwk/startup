@@ -8,8 +8,10 @@ export function useSettings() {
 
 export const SettingsProvider = ({ children }) => {
     const [settings, setSettings] = useState({
-        theme: 'light',  // Default settings
+        theme: 'light',
         notifications: true,
+        multiplePlanners: false,
+        comfiness: 1,
     });
 
     // Load settings from the server when the component mounts

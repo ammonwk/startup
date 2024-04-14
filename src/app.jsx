@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 import { Login } from './login';
-import { Planner } from './planner';
 import { PlannerGrid } from './planner-grid';
 import { Home } from './home';
 import { Signup } from './signup';

@@ -159,6 +159,37 @@ function SettingsDropdown() {
                             <option value="dark">Dark</option>
                         </select>
                     </div>
+                    <div className="mb-3">
+                        <div className="form-check">
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="multiplePlannersCheckbox"
+                                checked={settings.multiplePlanners}
+                                onChange={(e) => changeSetting('multiplePlanners', e.target.checked)}
+                            />
+                            <label className="form-check-label" htmlFor="multiplePlannersCheckbox">
+                                Show multiple planners
+                            </label>
+                        </div>
+                    </div>
+                    {settings.multiplePlanners && (
+                        <div className="mb-3">
+                            <label htmlFor="comfinessRange" className="form-label">
+                                Comfiness:
+                            </label>
+                            <input
+                                type="range"
+                                className="form-range"
+                                id="comfinessRange"
+                                min="0.5"
+                                max="1.75"
+                                step="0.05"
+                                value={settings.comfiness}
+                                onChange={(e) => changeSetting('comfiness', parseFloat(e.target.value))}
+                            />
+                        </div>
+                    )}
                 </form>
             </div>
         </div>

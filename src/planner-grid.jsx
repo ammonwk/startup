@@ -4,10 +4,11 @@ import "./plannergrid.css";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import moment from "moment";
+import { useSettings } from "./settings-provider";
 
 export function PlannerGrid() {
-
-    const [numberOfPlanners, setNumberOfPlanners] = useState(Math.ceil(window.innerWidth / 450));
+    const { settings } = useSettings();
+    const [numberOfPlanners, setNumberOfPlanners] = useState(1);
     const [selectedDate, setSelectedDate] = useState(moment());
     const [quote, setQuote] = useState("Loading quote...");
 
@@ -33,17 +34,32 @@ export function PlannerGrid() {
 
     useEffect(() => {
         fetchQuote();
+        const calculateNumberOfPlanners = () => {
+            if (settings.multiplePlanners) {
+                const plannerWidth = 450 / settings.comfiness;
+                console.log(Math.min(plannerWidth - 50, 300))
+                const numberOfPlanners = Math.max(Math.floor(window.innerWidth / plannerWidth), 1);
+                document.documentElement.style.setProperty('--planner-width', `${Math.min(window.innerWidth / numberOfPlanners - 50 / (settings.comfiness * 6), 600)}px`);
+                setNumberOfPlanners(numberOfPlanners);
+            } else {
+                setNumberOfPlanners(1);
+                document.documentElement.style.setProperty('--planner-width', `600px`);
+                console.log(document.documentElement.style.getPropertyValue('--planner-width'))
+            }
+        };
+
+        calculateNumberOfPlanners(); // Calculate the number of planners initially
+
         const handleResize = () => {
-            setNumberOfPlanners(Math.max(Math.floor(window.innerWidth / 450), 1));
+            calculateNumberOfPlanners(); // Recalculate the number of planners on window resize
         };
 
         window.addEventListener("resize", handleResize);
 
-        // Clean up the event listener when the component unmounts
         return () => {
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, [settings.multiplePlanners, settings.comfiness]);
 
     const calculatePlannerDate = (index) => {
         const offset = Math.floor(numberOfPlanners / 2);
