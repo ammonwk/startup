@@ -340,7 +340,7 @@ export function SharedCalendar() {
                             <Form.Label>Duration (Minutes)</Form.Label>
                             <Form.Control
                                 type="number"
-                                value={editingEvent?.duration || 30}
+                                value={editingEvent?.duration}
                                 onChange={handleEventChange}
                                 name="duration"
                             />

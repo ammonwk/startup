@@ -56,13 +56,12 @@ main {
     margin-bottom: 6em;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 400px) {
     .users {
         position: fixed;
-        margin-bottom: 9em;
+        margin-bottom: 0.5em;
     }
 }
-
 
 .login_display {
     flex: 1;
