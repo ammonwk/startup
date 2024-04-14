@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import interact from 'interactjs';
 import PropTypes from 'prop-types';
 
-const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIsDragging }) => {
+const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIsDragging }) => {
     const eventRef = useRef(null);
 
     useEffect(() => {
@@ -21,7 +21,7 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIs
                         setIsDragging(true);
                     },
                     move(event) {
-                        event.preventDefault(); // Add this line to prevent default touch behavior
+                        event.preventDefault();
                         onMoveEvent(event.target.getAttribute('data-id'), event.dy);
                     },
                     end(event) {
@@ -29,7 +29,7 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIs
                     },
                 },
             })
-            .styleCursor(false); // Add this line to disable the default touch cursor
+            .styleCursor(false);
     }, [event, onMoveEvent, onSnapEvent]);
 
     const snapToClosest = (target) => {
@@ -50,8 +50,6 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIs
         }, 50);
     };
 
-    // Snap to closest time block when event is created
-
     useEffect(() => {
         snapToClosest(eventRef.current);
     }, []);
@@ -62,21 +60,79 @@ const Event = ({ event, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIs
         }
     };
 
-    const event_height = event.duration * 6 / 5;
+    const getEventColumns = (allEvents) => {
+        const columns = [];
+        allEvents.forEach((currentEvent) => {
+            const currentStart = parseInt(currentEvent.y, 10);
+            const currentEnd = currentStart + (currentEvent.duration * 6 / 5) - 5;
+            let placed = false;
+            for (let i = 0; i < columns.length; i++) {
+                const column = columns[i];
+                const canPlace = column.every((otherEvent) => {
+                    const otherStart = parseInt(otherEvent.y, 10);
+                    const otherEnd = otherStart + (otherEvent.duration * 6 / 5) - 5;
+                    return currentStart >= otherEnd || currentEnd <= otherStart;
+                });
+                if (canPlace) {
+                    column.push(currentEvent);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                columns.push([currentEvent]);
+            }
+        });
+        return columns;
+    };
+
+    const calculateEventStyles = (event, columnIndex, totalColumns, eventColumns) => {
+        const event_height = (event.duration * 6 / 5) - 5;
+        let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
+        let eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
+
+        // Check if the event can expand to fill remaining columns
+        const currentStart = parseInt(event.y, 10);
+        const currentEnd = currentStart + event_height;
+        const canExpand = eventColumns.slice(columnIndex + 1).every((column) =>
+            column.every((otherEvent) => {
+                const otherStart = parseInt(otherEvent.y, 10);
+                const otherEnd = otherStart + (otherEvent.duration * 6 / 5) - 5;
+                return currentEnd <= otherStart || currentStart >= otherEnd;
+            })
+        );
+
+        if (canExpand) {
+            const expandedColumns = totalColumns - columnIndex;
+            eventWidth = `calc((${expandedColumns} * (100% - 85px)) / ${totalColumns})`;
+            eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
+        }
+
+        return {
+            top: event.y,
+            left: eventLeft,
+            width: eventWidth,
+            height: `${event_height}px`,
+            textAlign: 'center',
+            lineHeight: `${event_height - 10}px`,
+            backgroundColor: event.color || '#fff',
+        };
+    };
+
+
+    // Calculate event columns
+    const eventColumns = getEventColumns(events);
+    const totalColumns = eventColumns.length;
+    const columnIndex = eventColumns.findIndex((column) => column.some((e) => e.id === event.id));
+
+    // Calculate styles based on column placement
+    const eventStyles = calculateEventStyles(event, columnIndex, totalColumns, eventColumns);
 
     return (
         <div
             ref={eventRef}
             className="event"
-            style={{
-                top: event.y,
-                left: '85px',
-                width: 'calc(100% - 85px)',
-                height: `${event_height}px`,
-                textAlign: 'center',
-                lineHeight: `${event_height - 10}px`,
-                backgroundColor: event.color || '#fff',
-            }}
+            style={eventStyles}
             data-id={event.id}
             onClick={handleClick}
         >
@@ -93,6 +149,15 @@ Event.propTypes = {
         color: PropTypes.string,
         duration: PropTypes.number.isRequired,
     }).isRequired,
+    events: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            name: PropTypes.string.isRequired,
+            y: PropTypes.string.isRequired,
+            color: PropTypes.string,
+            duration: PropTypes.number.isRequired,
+        })
+    ).isRequired,
     onMoveEvent: PropTypes.func.isRequired,
     onSnapEvent: PropTypes.func.isRequired,
     onEditEvent: PropTypes.func.isRequired,
