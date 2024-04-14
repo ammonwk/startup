@@ -301,9 +301,11 @@ export function SharedCalendar() {
                     <Event
                         key={event.id}
                         event={event}
+                        events={Object.values(events)}
                         onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
                         onEditEvent={handleEditEvent}
+                        isDragging={isDragging}
                         setIsDragging={setIsDragging}
                     />
                 ))}
