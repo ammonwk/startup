@@ -8,13 +8,12 @@ import "react-calendar/dist/Calendar.css"; // Import default styles
 import moment from "moment";
 import { NavLink } from "react-router-dom";
 
-export function Planner() {
+export function Planner({ selectedDate, setSelectedDate }) {
     const [events, setEvents] = useState({});
     const [nextId, setNextId] = useState(0);
-    const [quote, setQuote] = useState("Loading quote...");
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(moment());
+    // const [selectedDate, setSelectedDate] = useState(moment());
     const [showDropdown, setShowDropdown] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const dropdownRef = useRef(null);
@@ -23,16 +22,15 @@ export function Planner() {
         setEvents({});
         setNextId(0);
         loadEvents(selectedDate);
-        fetchQuote();
     }, [selectedDate]);
 
     const loadEvents = async (date) => {
         try {
-            const response = await fetch(`/api/events?date=${date.format("YYYY-MM-DD")}`);
+            const response = await fetch(`/api/events?date=${moment(date).format("YYYY-MM-DD")}`);
             if (response.ok) {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
-                localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
+                localStorage.setItem(`events-${moment(date).format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
                 const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
                 setNextId(maxId + 1);
             } else {
@@ -47,7 +45,7 @@ export function Planner() {
 
     const loadLocalEvents = (date) => {
         try {
-            const localEvents = JSON.parse(localStorage.getItem(`events-${date.format("YYYY-MM-DD")}`)) || {};
+            const localEvents = JSON.parse(localStorage.getItem(`events-${moment(date).format("YYYY-MM-DD")}`)) || {};
             setEvents(localEvents);
             const maxId = Object.keys(localEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
             setNextId(maxId + 1);
@@ -56,25 +54,6 @@ export function Planner() {
         }
     };
 
-    const fetchQuote = async () => {
-        try {
-            const response = await fetch("https://api.api-ninjas.com/v1/quotes?category=faith", {
-                method: "GET",
-                headers: {
-                    "X-Api-Key": "mSk7rfR5LnbL1FtY21YE8Q==pDgGWJtNnmVdIInG",
-                    "Content-Type": "application/json",
-                },
-            });
-            if (response.ok) {
-                const result = await response.json();
-                setQuote(`"${result[0].quote}" - ${result[0].author}.`);
-            } else {
-                throw new Error("Network response was not ok", response.status);
-            }
-        } catch (error) {
-            console.error("Error fetching quote:", error);
-        }
-    };
 
     const createEvent = (hour) => {
         const newEvent = {
@@ -119,9 +98,9 @@ export function Planner() {
     };
 
     async function saveEvents(updatedEvents) {
-        localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
+        localStorage.setItem(`events-${moment(selectedDate).format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
         try {
-            await fetch(`/api/events?date=${selectedDate.format("YYYY-MM-DD")}`, {
+            await fetch(`/api/events?date=${moment(selectedDate).format("YYYY-MM-DD")}`, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(updatedEvents),
@@ -191,7 +170,7 @@ export function Planner() {
 
     // This function gets the start of the current week
     const getWeekStart = (date) => {
-        return date.clone().startOf("week");
+        return moment(date).clone().startOf("week");
     };
 
     // Generate the days for the week view
@@ -220,28 +199,9 @@ export function Planner() {
 
     return (
         <div className="container">
-            <h2 className="welcome">
-                Welcome
-                {localStorage.getItem("userName")
-                    ? `, ${localStorage.getItem("userName")}.`
-                    : ". Please log in to save your events."}
-            </h2>
-            <h3>Weekly Schedule</h3>
-            <div>
-                {localStorage.getItem("userName")
-                    ? <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
-                    : <div>
-                        <div className="alert alert-danger" role="alert">
-                            WATCH OUT: You are not logged in. Your changes will not be saved. <NavLink to="/login">Log in</NavLink> or <NavLink to="/signup">sign up</NavLink> to save your events.
-                        </div>
-                    </div>
-                }
-            </div>
-
-
             <div className="current-date-view">
                 <Button variant="link" onClick={toggleDropdown}>
-                    {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
+                    {moment(selectedDate).format("MMMM D, YYYY")} <i className="arrow down"></i>
                 </Button>
                 <div className="today-button" onClick={goToToday}>
                     Go To Today: {moment().date()}
@@ -301,7 +261,6 @@ export function Planner() {
                     />
                 ))}
             </div>
-            <p className="quote">Fetched Quote: {quote}</p>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Event</Modal.Title>

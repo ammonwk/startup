@@ -88,8 +88,8 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
 
     const calculateEventStyles = (event, columnIndex, totalColumns, eventColumns) => {
         const event_height = (event.duration * 6 / 5) - 5;
-        let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
-        let eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
+        let eventWidth = totalColumns > 0 ? `calc((100% - 75px) / ${totalColumns})` : 'calc(100% - 75px)';
+        let eventLeft = `calc(75px + ${columnIndex} * ((100% - 75px) / ${totalColumns}))`;
 
         // Check if the event can expand to fill remaining columns
         const currentStart = parseInt(event.y, 10);
@@ -104,8 +104,8 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
 
         if (canExpand) {
             const expandedColumns = totalColumns - columnIndex;
-            eventWidth = `calc((${expandedColumns} * (100% - 85px)) / ${totalColumns})`;
-            eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
+            eventWidth = `calc((${expandedColumns} * (100% - 75px)) / ${totalColumns})`;
+            eventLeft = `calc(75px + ${columnIndex} * ((100% - 75px) / ${totalColumns}))`;
         }
 
         return {

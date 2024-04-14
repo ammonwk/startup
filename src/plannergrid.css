@@ -1,0 +1,13 @@
+.planner-grid {
+    display: flex;
+    /* grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); */
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.planner-header {
+    margin: 1em 3em 1em 3em;
+}
