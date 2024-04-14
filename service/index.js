@@ -118,6 +118,33 @@ apiRouter.post('/events', async (req, res) => {
     }
 });
 
+apiRouter.get('/settings', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        const settings = await db.collection('settings').findOne({ userId: user._id });
+        res.send(settings ? settings : {});
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
+});
+
+apiRouter.post('/settings', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        const newSettings = req.body;
+        await db.collection('settings').updateOne(
+            { userId: user._id },
+            { $set: newSettings },
+            { upsert: true }
+        );
+        res.send(newSettings);
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
+});
+
 // Get and set shared events
 apiRouter.get('/shared-events', async (req, res) => {
     const date = req.query.date;
