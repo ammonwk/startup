@@ -1,3 +1,35 @@
+:root {
+    --background-color: #fff;
+    --text-color: #333;
+    --highlight-color: #a9deaa;
+    /* Light theme highlight color */
+    --button-bg-color: #a9deaa;
+    /* Light theme button background */
+    --button-text-color: white;
+    --modal-bg-color: rgba(0, 0, 0, 0.4);
+    --border-color: #ccc;
+    --nav-link-color: #4f4f4f;
+    --user-count-bg-color: rgba(13, 109, 252, 0.6);
+    --user-count-border-color: rgba(13, 109, 252, 0.8);
+    --event-bg-color: #f2f2f2;
+}
+
+[data-theme="dark"] {
+    --background-color: #333;
+    --text-color: #fff;
+    --highlight-color: #336633;
+    /* Dark theme highlight color */
+    --button-bg-color: #336633;
+    /* Dark theme button background */
+    --button-text-color: #ddd;
+    --modal-bg-color: rgba(255, 255, 255, 0.1);
+    --border-color: #555;
+    --nav-link-color: #ddd;
+    --user-count-bg-color: rgba(13, 109, 252, 0.8);
+    --user-count-border-color: rgba(13, 109, 252, 1);
+    --event-bg-color: #444;
+}
+
 /* Ensure the page takes up full viewport height with a flex container */
 html,
 body {
@@ -10,11 +42,17 @@ body {
     flex-direction: column;
     min-height: 100vh;
     /* Use the full viewport height */
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 body {
     display: flex;
     flex-direction: column;
+}
+
+.settings-button {
+    color: var(--nav-link-color)
 }
 
 footer {
@@ -71,4 +109,231 @@ main {
     flex-direction: column;
     align-items: center;
     padding: 2em;
+}
+
+div.hr {
+    border-top: 1px solid var(--border-color);
+    margin-left: 75px;
+}
+
+.time-block {
+    padding: 5px 0px;
+    white-space: nowrap;
+    text-align: right;
+    padding-right: calc(100% - 4em);
+
+    /* Make time text unselectable */
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.half-hour {
+    opacity: 0;
+    /* Hide the half-hour labels */
+}
+
+.container {
+    padding: 0px;
+    text-align: center;
+    max-width: 400px;
+}
+
+#events-container {
+    background-color: var(--event-bg-color);
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+}
+
+.event {
+    position: absolute;
+    /* min-width: 6em;
+    min-height: 2em; */
+    background-color: var(--event-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    padding: 4px;
+    cursor: move;
+    box-sizing: border-box;
+    overflow: hidden;
+    touch-action: none;
+
+    /* Make event text unselectable */
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.dragging {
+    z-index: 1000;
+    box-shadow: -2px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.current-date-view {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    max-width: 400px;
+}
+
+.current-date-view button {
+    background: none;
+    border: none;
+    color: var(--nav-link-color);
+    cursor: pointer;
+    padding: 0;
+}
+
+.current-date-view .BsCalendar {
+    cursor: pointer;
+}
+
+.dropdown-calendar {
+    position: absolute;
+    background-color: #ffffff;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.week-navigation {
+    max-width: 410px;
+    margin: 0 0;
+}
+
+.week-view {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.week-view .day {
+    cursor: pointer;
+    padding: 5px 5px;
+    text-align: center;
+}
+
+.week-view .today {
+    background-color: var(--button-bg-color);
+    /* Highlight color */
+    color: var(--button-text-color);
+    border-radius: 4px;
+}
+
+.week-view .selected-day {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    border-radius: 4px;
+}
+
+.today-button {
+    width: auto;
+    padding: 0 10px;
+    height: 24px;
+    background-color: var(--button-bg-color);
+    /* or any color you prefer */
+    color: var(--button-text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.week-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.arrow {
+    border: solid black;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+}
+
+.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    margin-bottom: 5px;
+}
+
+/* Modal */
+
+.modal {
+    /* display: none; */
+    position: fixed;
+    /* z-index: 10; */
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-bg-color);
+    color: var(--button-text-color);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+}
+
+.nav-link {
+    margin: 0 0.25em;
+}
+
+#userCountBox {
+    background-color: var(--user-count-bg-color);
+    border-color: var(--user-count-border-color);
+}
+
+.quote {
+    font-size: 1em;
+    font-style: italic;
+    margin: 0.5em 1em;
+}
+
+.dropdown-menu {
+    background-color: var(--modal-bg-color);
+    color: var(--button-text-color);
+}
+
+.form-select {
+    background-color: var(--event-bg-color);
+    color: var(--text-color);
+}
+
+.form-control {
+    background-color: var(--event-bg-color);
+    color: var(--text-color);
+}
+
+input::placeholder {
+    color: var(--text-color);
+}
+
+input::-ms-input-placeholder {
+    color: var(--text-color);
 }

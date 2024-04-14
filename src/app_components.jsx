@@ -10,7 +10,8 @@ export function NotFound() {
 
 export function Header({ isLoggedIn, setIsLoggedIn }) {
     const navigate = useNavigate();
-    // const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    const { settings } = useSettings();
+    const theme = settings.theme;
 
     React.useEffect(() => {
         const userName = localStorage.getItem('userName');
@@ -25,7 +26,7 @@ export function Header({ isLoggedIn, setIsLoggedIn }) {
 
     return (
         <header>
-            <nav className="navbar navbar-expand-sm navbar-light bg-white border-bottom mx-3 my-2">
+            <nav className={`navbar navbar-expand-sm navbar-${theme} bg-${theme === 'light' ? 'white' : 'dark'} border-bottom mx-3 my-2`}>
                 <div className="container-fluid">
                     <NavLink className="navbar-brand" to="/">RM Planner</NavLink>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -67,26 +68,29 @@ export function Header({ isLoggedIn, setIsLoggedIn }) {
     );
 }
 export function Footer() {
+    const { settings } = useSettings();
+    const theme = settings.theme;
+    const text = theme === 'light' ? 'muted' : 'light';
     return (
-        <footer className="mt-auto bg-light d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+        <footer className={`mt-auto bg-${theme} d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top`}>
             <nav aria-label="Footer legal">
                 <nav aria-label="Footer legal">
                     <ul className="nav">
-                        <li className="nav-item align-self-center"><span className="text-muted ms-3">© 2024 Ammon Kunzler</span>
+                        <li className="nav-item align-self-center"><span className={`text-${text} ms-3`}>© 2024 Ammon Kunzler</span>
                         </li>
                         <li className="nav-item"><a href="https://github.com/ammonwk/startup/blob/main/README.md"
-                            target="_blank" className="nav-link px-2 text-muted">Github</a></li>
+                            target="_blank" className={`nav-link px-2 text-${text}`}>Github</a></li>
                     </ul>
                 </nav>
             </nav>
 
             <nav aria-label="Footer navigation">
                 <ul className="nav">
-                    <li className="nav-item"><NavLink to="/" className="nav-link px-2 text-muted">Home</NavLink></li>
-                    <li className="nav-item"><NavLink to="/planner" className="nav-link px-2 text-muted">Planner</NavLink></li>
-                    <li className="nav-item"><NavLink to="/share" className="nav-link px-2 text-muted">CS 260 Shared Calendar</NavLink></li>
-                    <li className="nav-item"><NavLink to="/login" className="nav-link px-2 text-muted">Login</NavLink></li>
-                    <li className="nav-item"><NavLink to="/signup" className="nav-link px-2 me-2 text-muted">Sign up</NavLink></li>
+                    <li className="nav-item"><NavLink to="/" className={`nav-link px-2 text-${text}`}>Home</NavLink></li>
+                    <li className="nav-item"><NavLink to="/planner" className={`nav-link px-2 text-${text}`}>Planner</NavLink></li>
+                    <li className="nav-item"><NavLink to="/share" className={`nav-link px-2 text-${text}`}>CS 260 Shared Calendar</NavLink></li>
+                    <li className="nav-item"><NavLink to="/login" className={`nav-link px-2 text-${text}`}>Login</NavLink></li>
+                    <li className="nav-item"><NavLink to="/signup" className={`nav-link px-2 me-2 text-${text}`}>Sign up</NavLink></li>
                 </ul>
             </nav>
         </footer>
@@ -135,7 +139,7 @@ function SettingsDropdown() {
 
     return (
         <div className="dropdown settings-dropdown">
-            <button className="btn dropdown-toggle" type="button"
+            <button className="btn dropdown-toggle settings-button" type="button"
                 id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                 Settings
             </button>

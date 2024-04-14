@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TimeBlock from './timeblock';
 import Event from './event';
-import './planner.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 import Calendar from 'react-calendar'; // Import from react-calendar
 import 'react-calendar/dist/Calendar.css'; // Import default styles
@@ -305,6 +304,7 @@ export function SharedCalendar() {
                         onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
                         onEditEvent={handleEditEvent}
+                        isDragging={isDragging}
                         setIsDragging={setIsDragging}
                     />
                 ))}

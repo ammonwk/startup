@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const SettingsContext = createContext();
 
@@ -17,7 +17,14 @@ export const SettingsProvider = ({ children }) => {
             ...prevSettings,
             [key]: value
         }));
+        if (key === 'theme') {
+            document.body.setAttribute('data-theme', value);
+        }
     };
+
+    useEffect(() => {
+        document.body.setAttribute('data-theme', settings.theme);
+    }, [settings.theme]);
 
     return (
         <SettingsContext.Provider value={{ settings, changeSetting }}>
