@@ -86,6 +86,18 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
         return columns;
     };
 
+    function getTextColor(backgroundColor) {
+        const color = backgroundColor.slice(1); // Remove the '#' sign
+        const rgb = parseInt(color, 16); // Convert hex to decimal
+        const r = (rgb >> 16) & 0xff; // Extract red
+        const g = (rgb >> 8) & 0xff; // Extract green
+        const b = (rgb >> 0) & 0xff; // Extract blue
+
+        // Calculate luminance
+        const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return luminance > 140 ? '#333' : '#fff'; // Return #333 if light, #fff if dark
+    }
+
     const calculateEventStyles = (event, columnIndex, totalColumns, eventColumns) => {
         const event_height = (event.duration * 6 / 5) - 5;
         let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
@@ -116,6 +128,7 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             textAlign: 'center',
             lineHeight: `${event_height - 10}px`,
             backgroundColor: event.color || '#fff',
+            color: getTextColor(event.color || '#333'),
         };
     };
 
