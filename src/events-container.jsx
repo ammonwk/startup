@@ -1,37 +1,71 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
 
-function EventsContainer({ selectedDate }) {
+function EventsContainer({ selectedDate, apiEndpoint, shared }) {
     const [events, setEvents] = useState({});
     const [nextId, setNextId] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
+    const ws = useRef(null);
 
     useEffect(() => {
         setEvents({});
         setNextId(0);
         loadEvents(selectedDate);
+
+        if (shared) {
+            const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+            ws.current = new WebSocket(wsScheme + "://" + window.location.host + "/path");
+
+            ws.current.onopen = function () {
+                console.log('WebSocket connection established');
+            };
+
+            ws.current.onmessage = function (event) {
+                const message = JSON.parse(event.data);
+                if (message.type === 'sharedCalendarUpdated' && message.date === selectedDate.format('YYYY-MM-DD')) {
+                    loadEvents(selectedDate);
+                }
+            };
+
+            // Clean up the WebSocket connection when the component unmounts
+            return () => {
+                if (ws.current) {
+                    ws.current.close();
+                }
+            };
+        }
     }, [selectedDate]);
 
     const loadEvents = async (date) => {
         try {
-            const response = await fetch(`/api/events?date=${date.format("YYYY-MM-DD")}`);
+            const response = await fetch(`${apiEndpoint}?date=${date.format("YYYY-MM-DD")}`);
             if (response.ok) {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
-                localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
+                if (!shared) {
+                    localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
+                }
                 const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
                 setNextId(maxId + 1);
             } else {
-                console.log("Failed to load events from the server. Using local data...", response.status);
-                loadLocalEvents(date);
+                if (!shared) {
+                    console.log("Failed to load events from the server. Using local data...", response.status);
+                    loadLocalEvents(date);
+                } else {
+                    console.log('Failed to load shared events from the server.', response.status);
+                }
             }
         } catch (error) {
-            console.error("Error loading events:", error);
-            loadLocalEvents(date);
+            if (!shared) {
+                console.error("Error loading events:", error);
+                loadLocalEvents(date);
+            } else {
+                console.error('Error loading shared events:', error);
+            }
         }
     };
 
@@ -56,16 +90,16 @@ function EventsContainer({ selectedDate }) {
         };
         setEvents((prevEvents) => ({ ...prevEvents, [nextId]: newEvent }));
         setNextId((prevId) => prevId + 1);
-        saveEvents({ ...events, [nextId]: newEvent });
+        // When an event is created, it snaps into place and is saved then
     };
 
     const updateEvent = (id, updatedEvent) => {
-        setEvents((prevEvents) => ({ ...prevEvents, [id]: updatedEvent }));
+        setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
 
     const moveEvent = (id, dy) => {
-        setEvents((prevEvents) => {
+        setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
             const currentY = parseFloat(currentEvent.y);
             const updatedEvent = {
@@ -77,7 +111,7 @@ function EventsContainer({ selectedDate }) {
     };
 
     const snapEvent = (id, newY) => {
-        setEvents((prevEvents) => {
+        setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
             const updatedEvent = {
                 ...currentEvent,
@@ -89,15 +123,25 @@ function EventsContainer({ selectedDate }) {
     };
 
     async function saveEvents(updatedEvents) {
-        localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
+        if (!shared) {
+            localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
+        }
         try {
-            await fetch(`/api/events?date=${selectedDate.format("YYYY-MM-DD")}`, {
+            await fetch(`${apiEndpoint}?date=${selectedDate.format("YYYY-MM-DD")}`, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(updatedEvents),
             });
+            if (shared && ws.current.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({
+                    type: 'sharedCalendarUpdated',
+                    date: selectedDate.format('YYYY-MM-DD'),
+                }));
+            } else {
+                console.log('WebSocket connection is not open yet...');
+            }
         } catch (error) {
-            console.log("Failed to save events to the server. Saving locally...", error);
+            console.log(`Failed to save events to the server. ${!shared ? "Saving locally..." : ""} `, error);
         }
     }
 
@@ -119,7 +163,7 @@ function EventsContainer({ selectedDate }) {
 
     const handleEventChange = (e) => {
         const { name, value } = e.target;
-        setEditingEvent((prevEvent) => ({
+        setEditingEvent(prevEvent => ({
             ...prevEvent,
             [name]: name === "duration" ? parseInt(value, 10) : value,
         }));

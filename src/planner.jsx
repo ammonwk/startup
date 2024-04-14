@@ -4,9 +4,8 @@ import moment from "moment";
 import { NavLink } from "react-router-dom";
 import WeekNavigation from "./week-navigation";
 import EventsContainer from "./events-container";
-import EventModal from "./event-modal";
 
-export function Planner() {
+export function Planner({ apiEndpoint, welcomeMessage, shared }) {
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
 
@@ -57,16 +56,17 @@ export function Planner() {
                 {localStorage.getItem("userName")
                     ? `, ${localStorage.getItem("userName")}.`
                     : ". Please log in to save your events."}
+                {welcomeMessage}
             </h2>
             <h3>Weekly Schedule</h3>
             <div>
-                {localStorage.getItem("userName")
+                {!shared ? localStorage.getItem("userName")
                     ? <p>Your changes are automatically saved to the cloud. Try accessing the site on your phone to see the same events you've just made.</p>
                     : <div>
                         <div className="alert alert-danger" role="alert">
                             WATCH OUT: You are not logged in. Your changes will not be saved. <NavLink to="/login">Log in</NavLink> or <NavLink to="/signup">sign up</NavLink> to save your events.
                         </div>
-                    </div>
+                    </div> : "Your changes are automatically synced with everyone else using the Calendar."
                 }
             </div>
             <WeekNavigation
@@ -76,7 +76,7 @@ export function Planner() {
                 onGoToPreviousWeek={goToPreviousWeek}
                 onGoToNextWeek={goToNextWeek}
             />
-            <EventsContainer selectedDate={selectedDate} />
+            <EventsContainer selectedDate={selectedDate} apiEndpoint={apiEndpoint} shared={shared} />
             <p className="quote">Fetched Quote: {quote}</p>
         </div>
     );
