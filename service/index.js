@@ -20,6 +20,11 @@ const { peerProxy } = require('./peerProxy.js');
     await client.connect();
     await db.command({ ping: 1 });
     console.log('Connected to database', db.databaseName);
+
+    // Create indexes
+    await db.collection('events').createIndex({ userId: 1, date: 1 });
+    await db.collection('sharedEvents').createIndex({ date: 1 });
+    console.log('Indexes created successfully');
 })().catch((ex) => {
     console.log(`Unable to connect to database with ${url} because ${ex.message}`);
     process.exit(1);
@@ -95,8 +100,11 @@ apiRouter.get('/events', async (req, res) => {
     const user = await db.collection('users').findOne({ token: token });
     if (user) {
         const date = req.query.date; // Get the date from the query parameter
-        // Find the events document for this user and date
-        const userEvents = await db.collection('events').findOne({ userId: user._id, date: date });
+        // Find the events document for this user and date with projection
+        const userEvents = await db.collection('events').findOne(
+            { userId: user._id, date: date },
+            { projection: { events: 1, _id: 0 } }
+        );
         // If the document exists, send it; otherwise, send an empty object
         res.send(userEvents ? userEvents.events : {});
     } else {
@@ -125,7 +133,10 @@ apiRouter.post('/events', async (req, res) => {
 // Get and set shared events
 apiRouter.get('/shared-events', async (req, res) => {
     const date = req.query.date;
-    const sharedEvents = await db.collection('sharedEvents').findOne({ date: date });
+    const sharedEvents = await db.collection('sharedEvents').findOne(
+        { date: date },
+        { projection: { events: 1, _id: 0 } }
+    );
     res.send(sharedEvents ? sharedEvents.events : {});
 });
 
