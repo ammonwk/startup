@@ -21,12 +21,14 @@ export default function App() {
                             <Planner apiEndpoint={"/api/events"}
                                 key="planner"
                                 welcomeMessage={""}
-                                shared={false} />} />
+                                shared={false}
+                                localStorageEnabled={false} />} />
                         <Route path="/share" element={
                             <Planner apiEndpoint={"/api/shared-events"}
                                 key="shared"
                                 welcomeMessage={" You're on the Shared CS 260 Calendar"}
-                                shared={true} />} />
+                                shared={true}
+                                localStorageEnabled={false} />} />
                         <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="*" element={<NotFound />} />

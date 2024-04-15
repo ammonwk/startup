@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 import WeekNavigation from "./week-navigation";
 import EventsContainer from "./events-container";
 
-export function Planner({ apiEndpoint, welcomeMessage, shared }) {
+export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabled }) {
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
     const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
@@ -82,7 +82,12 @@ export function Planner({ apiEndpoint, welcomeMessage, shared }) {
                 onGoToNextWeek={goToNextWeek}
                 onClearEvents={clearEvents}
             />
-            <EventsContainer selectedDate={selectedDate} apiEndpoint={apiEndpoint} shared={shared} clearEventsTrigger={clearEventsTrigger} />
+            <EventsContainer
+                selectedDate={selectedDate}
+                apiEndpoint={apiEndpoint}
+                shared={shared}
+                clearEventsTrigger={clearEventsTrigger}
+                localStorageEnabled={localStorageEnabled} />
             <p className="quote">Fetched Quote: {quote}</p>
         </div>
     );

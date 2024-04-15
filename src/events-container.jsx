@@ -3,20 +3,23 @@ import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
 
-function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger }) {
+function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled }) {
     const [events, setEvents] = useState({});
     const [nextId, setNextId] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const ws = useRef(null);
-    let localStorageEnabled = false;
 
+    // Load events from the server when the selected date changes
     useEffect(() => {
         setEvents({});
         setNextId(0);
         loadEvents(selectedDate);
+    }, [selectedDate]);
 
+    // Connect to the WebSocket server when the component mounts
+    useEffect(() => {
         if (shared) {
             const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
             ws.current = new WebSocket(wsScheme + "://" + window.location.host + "/path");
@@ -39,7 +42,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 }
             };
         }
-    }, [selectedDate]);
+    }, []);
 
     const clearEvents = () => {
         localStorage.removeItem('events');
