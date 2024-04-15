@@ -10,6 +10,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const ws = useRef(null);
+    const saveEventsTimeout = useRef(null);
 
     // Load events from the server when the selected date changes
     useEffect(() => {
@@ -139,7 +140,36 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         saveEvents({ ...events, [id]: { ...events[id], y: `${newY}px` } });
     };
 
+    useEffect(() => {
+        const handleBeforeUnload = async (e) => {
+            // Directly call saveEvents if there is any pending operation
+            if (saveEventsTimeout.current) {
+                clearTimeout(saveEventsTimeout.current);
+                saveEventsTimeout.current = null;
+                await saveEvents(Object.assign({}, events));  // Make sure to pass the current events state
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [events]);
+
+    const saveEventsDebounced = (updatedEvents) => {
+        if (saveEventsTimeout.current) {
+            clearTimeout(saveEventsTimeout.current);
+        }
+        saveEventsTimeout.current = setTimeout(() => {
+            saveEvents(updatedEvents);
+        }, 500); // 0.5 seconds delay
+    };
+
     async function saveEvents(updatedEvents) {
+        if (saveEventsTimeout.current) {
+            clearTimeout(saveEventsTimeout.current);
+            saveEventsTimeout.current = null;
+        }
         if (!shared && localStorageEnabled) {
             localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
         }
@@ -149,7 +179,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(updatedEvents),
             });
-            if (shared && ws.current.readyState === WebSocket.OPEN) {
+            if (shared && ws.current && ws.current.readyState === WebSocket.OPEN) {
                 ws.current.send(JSON.stringify({
                     type: 'sharedCalendarUpdated',
                     date: selectedDate.format('YYYY-MM-DD'),
@@ -160,7 +190,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         } catch (error) {
             console.log(`Failed to save events to the server. ${!shared && localStorageEnabled ? "Saving locally..." : ""} `, error);
         }
-    }
+    };
 
     const handleEditEvent = (id) => {
         setShowModal(true);
