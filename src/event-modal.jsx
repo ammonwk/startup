@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, Button, Form } from "react-bootstrap";
+import { useEffect } from "react";
 
 function EventModal({
     showModal,
@@ -9,6 +10,26 @@ function EventModal({
     onDeleteEvent,
     onEventChange,
 }) {
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();  // Prevent default form submit behavior
+                onSaveEvent();  // Trigger save event
+                onCloseModal();  // Close the modal after saving
+            } else if (event.key === 'Escape') {
+                onCloseModal();  // Close the modal on escape key
+            }
+        };
+
+        if (showModal) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        // Cleanup listener when component unmounts or modal is closed
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showModal, onSaveEvent, onCloseModal]);
     return (
         <Modal show={showModal} onHide={onCloseModal}>
             <Modal.Header closeButton>
