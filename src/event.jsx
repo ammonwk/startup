@@ -99,7 +99,7 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
     }
 
     const calculateEventStyles = (event, columnIndex, totalColumns, eventColumns) => {
-        const event_height = (event.duration * 6 / 5) - 5;
+        const event_height = Math.max((event.duration * 6 / 5) - 2, 34);
         let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
         let eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
 
