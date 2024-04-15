@@ -10,7 +10,7 @@ const TimeBlock = ({ hour, onCreateEvent, onSnapEvent, isHalf, isDragging }) => 
 
     return (
         <div
-            className={`time-block ${isHalf ? 'half-hour' : ''}`}
+            className={`time-block ${isHalf ? 'half-hour' : ''} non-selectable`}
             onClick={handleClick}
             data-time={hour}
         >

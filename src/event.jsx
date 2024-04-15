@@ -139,7 +139,7 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
     return (
         <div
             ref={eventRef}
-            className="event"
+            className="event non-selectable"
             style={eventStyles}
             data-id={event.id}
             onClick={handleClick}

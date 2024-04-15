@@ -12,7 +12,6 @@ const ResponsiveText = ({ text, lineHeight, color, backgroundColor }) => {
                 let lineHeightPx = parseFloat(lineHeight);
                 const newLineClamp = Math.max(1, Math.floor(height / lineHeightPx));
                 const newLineHeight = lineHeight + (height % lineHeightPx) / newLineClamp;
-                // Make line height an even divisor of height to cut off overflowing text
                 setLineClamp(newLineClamp);
                 setFinalLineHeight(newLineHeight);
             }
@@ -29,22 +28,33 @@ const ResponsiveText = ({ text, lineHeight, color, backgroundColor }) => {
         };
     }, [lineHeight]);
 
-    const style = {
+    const containerStyle = {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: '100%',
+        padding: '0 5px',
+        backgroundColor,
+    };
+
+    const textStyle = {
         display: '-webkit-box',
         WebkitBoxOrient: 'vertical',
         WebkitLineClamp: lineClamp,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         textAlign: 'left',
-        backgroundColor,
         color,
         lineHeight: `${finalLineHeight}px`,
-        height: '100%',
+        width: '100%', // Ensure it takes full width for correct centering
     };
 
     return (
-        <div ref={ref} style={style}>
-            {text}
+        <div ref={ref} style={containerStyle}>
+            <div style={textStyle}>
+                {text}
+            </div>
         </div>
     );
 };

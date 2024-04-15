@@ -46,9 +46,9 @@ function WeekNavigation({
                 <Button id="current-day-button" variant="link" onClick={toggleDropdown}>
                     {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
                 </Button>
-                <div className="today-button" onClick={onGoToToday}>
+                <Button className="today-button" onClick={onGoToToday}>
                     Today
-                </div>
+                </Button>
                 {showDropdown && (
                     <div className="dropdown-calendar" ref={dropdownRef}>
                         <Calendar value={selectedDate.toDate()} onChange={onDateChange} />
@@ -68,7 +68,7 @@ function WeekNavigation({
                                 : day.isSame(selectedDate, "day")
                                     ? " selected-day"
                                     : ""
-                                }`}
+                                } non-selectable`}
                             onClick={() => {
                                 onDateChange(day);
                             }}

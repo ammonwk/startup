@@ -74,6 +74,7 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
                     </div> : "Your changes are automatically synced with everyone else using the Calendar."
                 }
             </div>
+            <br></br>
             <WeekNavigation
                 selectedDate={selectedDate}
                 onDateChange={handleDateChange}
