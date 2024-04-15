@@ -10,6 +10,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const ws = useRef(null);
+    let localStorageEnabled = false;
 
     useEffect(() => {
         setEvents({});
@@ -59,13 +60,13 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             if (response.ok) {
                 const loadedEvents = await response.json();
                 setEvents(loadedEvents);
-                if (!shared) {
+                if (!shared && localStorageEnabled) {
                     localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
                 }
                 const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
                 setNextId(maxId + 1);
             } else {
-                if (!shared) {
+                if (!shared && localStorageEnabled) {
                     console.log("Failed to load events from the server. Using local data...", response.status);
                     loadLocalEvents(date);
                 } else {
@@ -73,7 +74,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 }
             }
         } catch (error) {
-            if (!shared) {
+            if (!shared && localStorageEnabled) {
                 console.error("Error loading events:", error);
                 loadLocalEvents(date);
             } else {
@@ -136,7 +137,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     };
 
     async function saveEvents(updatedEvents) {
-        if (!shared) {
+        if (!shared && localStorageEnabled) {
             localStorage.setItem(`events-${selectedDate.format("YYYY-MM-DD")}`, JSON.stringify(updatedEvents));
         }
         try {
@@ -154,7 +155,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 console.log('WebSocket connection is not open yet...');
             }
         } catch (error) {
-            console.log(`Failed to save events to the server. ${!shared ? "Saving locally..." : ""} `, error);
+            console.log(`Failed to save events to the server. ${!shared && localStorageEnabled ? "Saving locally..." : ""} `, error);
         }
     }
 
