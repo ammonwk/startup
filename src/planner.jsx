@@ -8,6 +8,11 @@ import EventsContainer from "./events-container";
 export function Planner({ apiEndpoint, welcomeMessage, shared }) {
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
+    const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
+
+    const clearEvents = () => {
+        setClearEventsTrigger(prev => !prev); // Toggle to trigger effect in EventsContainer
+    };
 
     useEffect(() => {
         fetchQuote();
@@ -75,8 +80,9 @@ export function Planner({ apiEndpoint, welcomeMessage, shared }) {
                 onGoToToday={goToToday}
                 onGoToPreviousWeek={goToPreviousWeek}
                 onGoToNextWeek={goToNextWeek}
+                onClearEvents={clearEvents}
             />
-            <EventsContainer selectedDate={selectedDate} apiEndpoint={apiEndpoint} shared={shared} />
+            <EventsContainer selectedDate={selectedDate} apiEndpoint={apiEndpoint} shared={shared} clearEventsTrigger={clearEventsTrigger} />
             <p className="quote">Fetched Quote: {quote}</p>
         </div>
     );

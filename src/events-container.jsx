@@ -3,7 +3,7 @@ import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
 
-function EventsContainer({ selectedDate, apiEndpoint, shared }) {
+function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger }) {
     const [events, setEvents] = useState({});
     const [nextId, setNextId] = useState(0);
     const [showModal, setShowModal] = useState(false);
@@ -39,6 +39,19 @@ function EventsContainer({ selectedDate, apiEndpoint, shared }) {
             };
         }
     }, [selectedDate]);
+
+    const clearEvents = () => {
+        localStorage.removeItem('events');
+        setEvents({});
+        setNextId(0);
+        saveEvents({});
+    };
+
+    useEffect(() => {
+        if (clearEventsTrigger) {
+            clearEvents(); // The function you provided to reset events
+        }
+    }, [clearEventsTrigger]);
 
     const loadEvents = async (date) => {
         try {

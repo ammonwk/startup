@@ -9,6 +9,7 @@ function WeekNavigation({
     onGoToToday,
     onGoToPreviousWeek,
     onGoToNextWeek,
+    onClearEvents,
 }) {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
@@ -40,12 +41,13 @@ function WeekNavigation({
 
     return (
         <>
-            <div className="current-date-view">
-                <Button variant="link" onClick={toggleDropdown}>
+            <div className="planner-menu">
+                <Button id="empty-day" variant="link" onClick={onClearEvents}>Empty Day</Button>
+                <Button id="current-day-button" variant="link" onClick={toggleDropdown}>
                     {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
                 </Button>
                 <div className="today-button" onClick={onGoToToday}>
-                    Go To Today: {moment().date()}
+                    Today
                 </div>
                 {showDropdown && (
                     <div className="dropdown-calendar" ref={dropdownRef}>
@@ -62,10 +64,10 @@ function WeekNavigation({
                         <div
                             key={day}
                             className={`day${day.isSame(moment(), "day")
-                                    ? " today"
-                                    : day.isSame(selectedDate, "day")
-                                        ? " selected-day"
-                                        : ""
+                                ? " today"
+                                : day.isSame(selectedDate, "day")
+                                    ? " selected-day"
+                                    : ""
                                 }`}
                             onClick={() => {
                                 onDateChange(day);
