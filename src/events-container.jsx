@@ -101,7 +101,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const createEvent = (hour) => {
         const newEvent = {
             id: nextId,
-            name: "Click to change the event name.",
+            name: "",
             y: `${(hour - 6) * 68}px`,
             color: "#ffffff",
             duration: 30,

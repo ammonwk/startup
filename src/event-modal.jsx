@@ -45,6 +45,7 @@ function EventModal({
                             onChange={onEventChange}
                             name="name"
                             autoComplete="off"
+                            placeholder="E.g. Meeting with John Doe"
                         />
                     </Form.Group>
                     <Form.Group>

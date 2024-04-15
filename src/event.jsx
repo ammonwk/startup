@@ -145,7 +145,7 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             onClick={handleClick}
         >
             <ResponsiveText
-                text={event.name}
+                text={event.name || 'Click to change the event name.'}
                 color={eventStyles.color}
                 lineHeight={16}
                 backgroundColor={eventStyles.backgroundColor}
