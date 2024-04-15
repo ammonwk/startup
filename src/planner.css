@@ -40,7 +40,9 @@ div.hr {
     padding: 4px;
     cursor: move;
     box-sizing: border-box;
-    overflow: hidden;
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis;
+    white-space: nowrap; */
     touch-action: none;
 
     /* Make event text unselectable */

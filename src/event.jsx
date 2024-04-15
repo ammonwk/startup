@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import interact from 'interactjs';
 import PropTypes from 'prop-types';
+import ResponsiveText from './responsive-text'
 
 const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDragging, setIsDragging }) => {
     const eventRef = useRef(null);
@@ -99,25 +100,22 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
     }
 
     const calculateEventStyles = (event, columnIndex, totalColumns, eventColumns) => {
-        const event_height = Math.max((event.duration * 6 / 5) - 2, 34);
+        const event_height = Math.max((event.duration * 6 / 5) - 2, 34); // Minimum height
         let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
         let eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
 
-        // Check if the event can expand to fill remaining columns
-        const currentStart = parseInt(event.y, 10);
-        const currentEnd = currentStart + event_height;
-        const canExpand = eventColumns.slice(columnIndex + 1).every((column) =>
-            column.every((otherEvent) => {
+        // Expanding logic based on column availability
+        const canExpand = eventColumns.slice(columnIndex + 1).every(column =>
+            column.every(otherEvent => {
                 const otherStart = parseInt(otherEvent.y, 10);
                 const otherEnd = otherStart + (otherEvent.duration * 6 / 5) - 5;
-                return currentEnd <= otherStart || currentStart >= otherEnd;
+                return parseInt(event.y, 10) + event_height <= otherStart || parseInt(event.y, 10) >= otherEnd;
             })
         );
 
         if (canExpand) {
             const expandedColumns = totalColumns - columnIndex;
             eventWidth = `calc((${expandedColumns} * (100% - 85px)) / ${totalColumns})`;
-            eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
         }
 
         return {
@@ -125,7 +123,6 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             left: eventLeft,
             width: eventWidth,
             height: `${event_height}px`,
-            textAlign: 'center',
             lineHeight: `${event_height - 10}px`,
             backgroundColor: event.color || '#fff',
             color: getTextColor(event.color || '#333'),
@@ -133,12 +130,10 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
     };
 
 
-    // Calculate event columns
+    // Calculate event columns and styles
     const eventColumns = getEventColumns(events);
     const totalColumns = eventColumns.length;
-    const columnIndex = eventColumns.findIndex((column) => column.some((e) => e.id === event.id));
-
-    // Calculate styles based on column placement
+    const columnIndex = eventColumns.findIndex(column => column.some(e => e.id === event.id));
     const eventStyles = calculateEventStyles(event, columnIndex, totalColumns, eventColumns);
 
     return (
@@ -149,7 +144,12 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             data-id={event.id}
             onClick={handleClick}
         >
-            {event.name}
+            <ResponsiveText
+                text={event.name}
+                color={eventStyles.color}
+                lineHeight={16}
+                backgroundColor={eventStyles.backgroundColor}
+            />
         </div>
     );
 };
