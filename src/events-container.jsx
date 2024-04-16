@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
 
 function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled }) {
     const [events, setEvents] = useState({});
-    const [nextId, setNextId] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -15,7 +15,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     // Load events from the server when the selected date changes
     useEffect(() => {
         setEvents({});
-        setNextId(0);
         loadEvents(selectedDate);
     }, [selectedDate]);
 
@@ -48,7 +47,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const clearEvents = () => {
         localStorage.removeItem('events');
         setEvents({});
-        setNextId(0);
         saveEvents({});
     };
 
@@ -103,8 +101,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 if (!shared && localStorageEnabled) {
                     localStorage.setItem(`events-${date.format("YYYY-MM-DD")}`, JSON.stringify(loadedEvents));
                 }
-                const maxId = Object.keys(loadedEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
-                setNextId(maxId + 1);
             } else {
                 if (!shared && localStorageEnabled) {
                     console.log("Failed to load events from the server. Using local data...", response.status);
@@ -128,24 +124,21 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         try {
             const localEvents = JSON.parse(localStorage.getItem(`events-${date.format("YYYY-MM-DD")}`)) || {};
             setEvents(localEvents);
-            const maxId = Object.keys(localEvents).reduce((max, id) => Math.max(max, parseInt(id, 10)), 0);
-            setNextId(maxId + 1);
         } catch (error) {
             console.error("Error parsing local events:", error);
         }
     };
 
     const createEvent = (hour) => {
+        const newEventId = uuidv4();
         const newEvent = {
-            id: nextId,
+            id: newEventId,
             name: "",
             y: `${(hour - 6) * 68}px`,
             color: "#ffffff",
             duration: 30,
         };
-        setEvents((prevEvents) => ({ ...prevEvents, [nextId]: newEvent }));
-        setNextId((prevId) => prevId + 1);
-        // When an event is created, it snaps into place and is saved then
+        setEvents((prevEvents) => ({ ...prevEvents, [newEventId]: newEvent }));
     };
 
     const updateEvent = (id, updatedEvent) => {
@@ -203,6 +196,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     };
 
     async function saveEvents(updatedEvents) {
+        console.log('Saving events...', updatedEvents)
         if (saveEventsTimeout.current) {
             clearTimeout(saveEventsTimeout.current);
             saveEventsTimeout.current = null;

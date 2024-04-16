@@ -156,7 +156,7 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
 
 Event.propTypes = {
     event: PropTypes.shape({
-        id: PropTypes.number.isRequired,
+        id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         y: PropTypes.string.isRequired,
         color: PropTypes.string,
@@ -164,7 +164,7 @@ Event.propTypes = {
     }).isRequired,
     events: PropTypes.arrayOf(
         PropTypes.shape({
-            id: PropTypes.number.isRequired,
+            id: PropTypes.string.isRequired,
             name: PropTypes.string.isRequired,
             y: PropTypes.string.isRequired,
             color: PropTypes.string,
