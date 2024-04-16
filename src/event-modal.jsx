@@ -44,7 +44,7 @@ function EventModal({
                             onChange={onEventChange}
                             name="name"
                             autoComplete="off"
-                            placeholder="E.g. Meeting with John Doe"
+                            placeholder="Name of Event"
                         />
                     </Form.Group>
                     <Form.Group>
@@ -73,7 +73,7 @@ function EventModal({
                             value={editingEvent?.location || ""}
                             onChange={onEventChange}
                             name="location"
-                            placeholder="Where the event will take place"
+                            placeholder="Event Location"
                         />
                     </Form.Group>
                     <Form.Group>
@@ -94,10 +94,10 @@ function EventModal({
                     Close
                 </Button>
                 <Button variant="danger" onClick={onDeleteEvent}>
-                    Delete Event
+                    Delete
                 </Button>
                 <Button variant="primary" onClick={onSaveEvent}>
-                    Save Changes
+                    Save
                 </Button>
             </Modal.Footer>
         </Modal>
