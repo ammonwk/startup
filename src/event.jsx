@@ -169,6 +169,8 @@ Event.propTypes = {
             y: PropTypes.string.isRequired,
             color: PropTypes.string,
             duration: PropTypes.number.isRequired,
+            location: PropTypes.string,
+            notes: PropTypes.string,
         })
     ).isRequired,
     onMoveEvent: PropTypes.func.isRequired,

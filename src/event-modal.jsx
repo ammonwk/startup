@@ -20,16 +20,15 @@ function EventModal({
                 onCloseModal();  // Close the modal on escape key
             }
         };
-
         if (showModal) {
             document.addEventListener('keydown', handleKeyDown);
         }
-
         // Cleanup listener when component unmounts or modal is closed
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [showModal, onSaveEvent, onCloseModal]);
+
     return (
         <Modal show={showModal} onHide={onCloseModal}>
             <Modal.Header closeButton>
@@ -66,6 +65,28 @@ function EventModal({
                             name="duration"
                         />
                     </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Location</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={1}
+                            value={editingEvent?.location || ""}
+                            onChange={onEventChange}
+                            name="location"
+                            placeholder="Where the event will take place"
+                        />
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Notes</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            value={editingEvent?.notes || ""}
+                            onChange={onEventChange}
+                            name="notes"
+                            placeholder="Enter any notes or additional information"
+                        />
+                    </Form.Group>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
@@ -82,5 +103,4 @@ function EventModal({
         </Modal>
     );
 }
-
 export default EventModal;
