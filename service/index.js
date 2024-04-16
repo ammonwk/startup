@@ -151,6 +151,19 @@ apiRouter.post('/shared-events', async (req, res) => {
     res.send(events);
 });
 
+apiRouter.delete('/events/all', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        await db.collection('events').deleteMany({ userId: user._id });
+        console.log('All events cleared for user', user.username);
+        res.status(204).send(); // Send a No Content response
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
+});
+
+
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack for debugging
     res.status(500).send('Something broke!'); // Send a generic error message

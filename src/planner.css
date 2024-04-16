@@ -173,7 +173,7 @@ div.hr {
     /* display: none; */
     position: fixed;
     /* z-index: 10; */
-    padding-top: 100px;
+    padding-top: 2em;
     left: 0;
     top: 0;
     width: 100%;

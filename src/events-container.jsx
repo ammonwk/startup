@@ -52,6 +52,42 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         saveEvents({});
     };
 
+    // Currently unused except to debug
+    async function clearAllUserEvents() {
+        setEvents({});
+
+        if (!shared && localStorageEnabled) {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('events-'));
+            keys.forEach(key => localStorage.removeItem(key));
+        }
+
+        try {
+            const response = await fetch(`${apiEndpoint}/all`, {
+                method: "DELETE",
+                headers: { "content-type": "application/json" },
+            });
+
+            if (response.ok) {
+                if (response.status !== 204) { // Check if the response is not No Content
+                    const result = await response.json();
+                    console.log(result.msg);
+                } else {
+                    console.log('All events cleared successfully.');
+                }
+            } else {
+                console.error('Failed to clear all events: Server responded with an error.');
+            }
+
+            if (shared && ws.current && ws.current.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({
+                    type: 'allCalendarCleared',
+                }));
+            }
+        } catch (error) {
+            console.error(`Failed to clear all events on the server:`, error);
+        }
+    }
+
     useEffect(() => {
         if (clearEventsTrigger) {
             clearEvents(); // The function you provided to reset events
@@ -85,6 +121,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 console.error('Error loading shared events:', error);
             }
         }
+        console.log('Events loaded:', events);
     };
 
     const loadLocalEvents = (date) => {
