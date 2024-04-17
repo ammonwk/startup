@@ -100,17 +100,46 @@ apiRouter.get('/events', async (req, res) => {
     const user = await db.collection('users').findOne({ token: token });
     if (user) {
         const date = req.query.date; // Get the date from the query parameter
-        // Find the events document for this user and date with projection
-        const userEvents = await db.collection('events').findOne(
-            { userId: user._id, date: date },
-            { projection: { events: 1, _id: 0 } }
+        // Find the user's events document
+        const userEvents = await db.collection('user_events').findOne(
+            { userId: user._id },
+            { projection: { _id: 0, [date]: 1 } }
         );
-        // If the document exists, send it; otherwise, send an empty object
-        res.send(userEvents ? userEvents.events : {});
+        // If the document exists and has events for the specified date, send them; otherwise, send an empty object
+        res.send(userEvents && userEvents[date] ? userEvents[date] : {});
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 });
+
+function repeatsOn(event, date) {
+    const startDate = new Date(event.date);
+    const targetDate = new Date(date);
+    console.log('Checking event', event, 'for date', targetDate, 'start date', startDate);
+    const endDate = event.endDate ? new Date(event.endDate) : null;
+    if (targetDate < startDate || (endDate && targetDate > endDate)) {
+        return false;
+    }
+    // Check if the start date matches the target date
+    if (startDate.toDateString() === targetDate.toDateString()) {
+        return false;
+    }
+    // Calculate difference in days
+    const diffTime = Math.abs(targetDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    switch (event.repeat) {
+        case 'daily':
+            return true;
+        case 'weekly':
+            return diffDays % 7 === 0;
+        case 'monthly':
+            return startDate.getDate() === targetDate.getDate();
+        case 'yearly':
+            return startDate.getMonth() === targetDate.getMonth() && startDate.getDate() === targetDate.getDate();
+        default:
+            return false;
+    }
+}
 
 apiRouter.post('/events', async (req, res) => {
     const token = req.cookies.token;
@@ -118,10 +147,10 @@ apiRouter.post('/events', async (req, res) => {
     if (user) {
         const date = req.query.date; // Get the date from the query parameter
         const events = req.body;
-        // Update or insert the events document for this user and date
-        await db.collection('events').updateOne(
-            { userId: user._id, date: date },
-            { $set: { events: events, userId: user._id, date: date } },
+        // Update or insert the user's events document
+        await db.collection('user_events').updateOne(
+            { userId: user._id },
+            { $set: { [`${date}`]: events, userId: user._id } },
             { upsert: true }
         );
         res.send(events);

@@ -87,6 +87,41 @@ function EventModal({
                             placeholder="Enter any notes or additional information"
                         />
                     </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Repeat</Form.Label>
+                        <Form.Control
+                            as="select"
+                            value={editingEvent?.repeat || ""}
+                            onChange={onEventChange}
+                            name="repeat"
+                        >
+                            <option value="">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                            <option value="custom">Custom</option>
+                        </Form.Control>
+                    </Form.Group>
+
+                    {editingEvent?.repeat && (
+                        <Form.Group>
+                            <Form.Label>Repeat End Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                value={editingEvent?.endDate || ""}
+                                onChange={onEventChange}
+                                name="endDate"
+                            />
+                        </Form.Group>
+                    )}
+
+                    {editingEvent?.repeat === "custom" && (
+                        <Form.Group>
+                            <Form.Label>Custom Repeat Pattern</Form.Label>
+                            {/* Add form fields for custom repetition pattern */}
+                        </Form.Group>
+                    )}
                 </Form>
             </Modal.Body>
             <Modal.Footer>

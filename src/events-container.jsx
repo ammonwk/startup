@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
+import moment from "moment";
 
 function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled }) {
     const [events, setEvents] = useState({});
@@ -117,7 +118,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 console.error('Error loading shared events:', error);
             }
         }
-        console.log('Events loaded:', events);
     };
 
     const loadLocalEvents = (date) => {
@@ -137,6 +137,9 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             y: `${(hour - 6) * 68}px`,
             color: "#ffffff",
             duration: 30,
+            date: selectedDate.format("YYYY-MM-DD"),
+            repeat: false,
+            endDate: null,
         };
         setEvents((prevEvents) => ({ ...prevEvents, [newEventId]: newEvent }));
     };
@@ -168,31 +171,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             return { ...prevEvents, [id]: updatedEvent };
         });
         saveEvents({ ...events, [id]: { ...events[id], y: `${newY}px` } });
-    };
-
-    useEffect(() => {
-        const handleBeforeUnload = async (e) => {
-            // Directly call saveEvents if there is any pending operation
-            if (saveEventsTimeout.current) {
-                clearTimeout(saveEventsTimeout.current);
-                saveEventsTimeout.current = null;
-                await saveEvents(Object.assign({}, events));  // Make sure to pass the current events state
-            }
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, [events]);
-
-    const saveEventsDebounced = (updatedEvents) => {
-        if (saveEventsTimeout.current) {
-            clearTimeout(saveEventsTimeout.current);
-        }
-        saveEventsTimeout.current = setTimeout(() => {
-            saveEvents(updatedEvents);
-        }, 500); // 0.5 seconds delay
     };
 
     async function saveEvents(updatedEvents) {
@@ -247,7 +225,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         }));
     };
 
-    const handleDeleteEvent = () => {
+    const handleDeleteEvent = async () => {
         if (editingEvent) {
             const updatedEvents = { ...events };
             delete updatedEvents[editingEvent.id];
