@@ -150,24 +150,18 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     };
 
     const updateEvent = (id, updatedEvent) => {
-        if (editingEvent.repeated) {
+        if (editingEvent.repeat) {
             setShowRepeatModal("Edit");
-            editingEvent.repeat = false;
-            editingEvent.repeated = false;
         }
+        setEditingEvent(prev => ({ ...prev, ...updatedEvent }));
         editingEvent.repeated = false;
         setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
 
     const moveEvent = (id, dy) => {
-        // if (prevEvents[id] && prevEvents[id].repeated) {
-        //     setShowRepeatModal("Move");
-        // }
-        console.log("Moving event: ", events[id]);
-        if (events[id].repeated) {
+        if (events[id].repeat && !movingRepeat) {
             setMovingRepeat(true);
-            console.log("Moving repeat event...");
         }
         setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
@@ -182,14 +176,10 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     };
 
     const snapEvent = (id, newY) => {
-        console.log("Snapping event: ", id, newY);
         if (movingRepeat) {
-            console.log("Moving repeat event...");
             setEditingEvent(events[id]);
-            setShowRepeatModal("Move");
+            setShowRepeatModal("Edit");
             setMovingRepeat(false);
-            events[id].repeated = false;
-            events[id].repeat = false;
         }
         setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
@@ -203,7 +193,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     };
 
     async function saveEvents(updatedEvents) {
-        console.log('Saving events...', updatedEvents)
         if (saveEventsTimeout.current) {
             clearTimeout(saveEventsTimeout.current);
             saveEventsTimeout.current = null;
@@ -239,11 +228,9 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         setShowModal(false);
     };
 
-    const handleSaveEvent = () => {
-        if (editingEvent) {
-            updateEvent(editingEvent.id, editingEvent);
-            setShowModal(false);
-        }
+    const handleSaveEvent = (updatedEvent) => {
+        updateEvent(updatedEvent.id, updatedEvent);
+        // setShowModal(false);
     };
 
     const handleEventChange = (e) => {
@@ -256,10 +243,9 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
 
     const handleDeleteEvent = async () => {
         if (editingEvent) {
-            if (editingEvent.repeated) {
+            if (editingEvent.repeat) {
                 setShowRepeatModal("Delete");
             }
-            console.log("Continueing with delete...")
             const updatedEvents = { ...events };
             delete updatedEvents[editingEvent.id];
             setEvents(updatedEvents);
@@ -270,8 +256,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
 
     const changeJustThisEvent = async (change) => {
         // set the exception for this event
-        console.log(editingEvent)
-        console.log("Setting exception for event on: ", selectedDate.format('YYYY-MM-DD'));
         if (editingEvent.id) {
             try {
                 const response = await fetch(`${apiEndpoint}/exception`, {
@@ -283,19 +267,69 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                     }),
                 });
                 const result = await response.json();
-                console.log(result.msg);
             } catch (error) {
                 console.error("Error setting exception: ", error);
             }
+        }
+
+        if (events[editingEvent.id]) {
+            events[editingEvent.id].repeated = false;
+            events[editingEvent.id].repeat = false;
+            saveEvents(events);
         }
 
         // close the modal
         setShowRepeatModal(false);
     }
 
-    const changeAllFutureEvents = () => {
-        console.log('Deleting all future events...');
-    }
+    const changeAllFutureEvents = async (change) => {
+        const endDate = selectedDate.clone().subtract(1, 'day');
+        const oldEndDate = moment(editingEvent.endDate);
+        if (editingEvent.id) {
+            try {
+                const response = await fetch(`${apiEndpoint}/enddate`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        eventId: editingEvent.id,
+                        date: endDate.format('YYYY-MM-DD'),
+                    }),
+                });
+                const result = await response.json();
+            } catch (error) {
+                console.error("Error setting exception: ", error);
+            }
+        }
+
+        // Create a new event object with the updated properties
+
+
+        if (change === "Edit") {
+            // Update the events state with the new event and Delete the old event
+            const newEvent = {
+                ...editingEvent,
+                id: uuidv4(),
+                date: selectedDate.format('YYYY-MM-DD'),
+                repeat: editingEvent.repeat,
+                repeated: false,
+                endDate: oldEndDate.format('YYYY-MM-DD'),
+            };
+            const updatedEvents = { ...events, [newEvent.id]: newEvent };
+            delete updatedEvents[editingEvent.id];
+
+            setEvents(updatedEvents);
+        } else if (change === "Delete") {
+            // Delete all future events
+            const updatedEvents = { ...events };
+            delete updatedEvents[editingEvent.id];
+            setEvents(updatedEvents);
+        }
+
+        // Save the updated events
+        saveEvents(events);
+
+        setShowRepeatModal(false);
+    };
 
     const onCloseModal = () => {
         setShowRepeatModal(false);
@@ -306,7 +340,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         return (
             <Modal show={show} onHide={onCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Delete Event</Modal.Title>
+                    <Modal.Title>{showRepeatModal} Event</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <p>{showRepeatModal} all future instances of {event.name || "this event"}?</p>
@@ -362,7 +396,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 show={showRepeatModal}
                 event={editingEvent}
                 onChangeJustThis={changeJustThisEvent}
-                onChangeAllFuture={changeAllFutureEvents}
+                onChangeAllFuture={() => changeAllFutureEvents(showRepeatModal)}
             />
         </div>
     );

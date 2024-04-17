@@ -140,7 +140,6 @@ apiRouter.get('/events', async (req, res) => {
 function repeatsOn(event, date) {
     const startDate = new Date(event.date);
     const targetDate = new Date(date);
-    // console.log('Checking event', event, 'for date', targetDate, 'start date', startDate);
     const endDate = event.endDate ? new Date(event.endDate) : null;
     if (targetDate < startDate || (endDate && targetDate > endDate)) {
         return false;
@@ -172,7 +171,6 @@ apiRouter.post('/events', async (req, res) => {
     if (user) {
         const date = req.query.date; // Get the date from the query parameter
         const events = req.body;
-        // console.log("events", events)
         const nonRepeatedEvents = Object.keys(events).reduce((acc, eventId) => {
             const event = events[eventId];
             if (!event.repeated) {
@@ -180,7 +178,6 @@ apiRouter.post('/events', async (req, res) => {
             }
             return acc;
         }, {});
-        console.log("nonRepeatedEvents saved", nonRepeatedEvents)
 
         // Update or insert the user's events document
         await db.collection('user_events').updateOne(
@@ -206,7 +203,6 @@ apiRouter.post('/events/exception', async (req, res) => {
             { userId: user._id },
             { projection: { _id: 0 } }
         ) || {};
-        console.log("userEvents", userEvents)
         let earliestDate = null;
         // Iterate over all the dates in the user's events document
         for (const eventDate of Object.keys(userEvents)) {
@@ -234,6 +230,46 @@ apiRouter.post('/events/exception', async (req, res) => {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 });
+
+apiRouter.post('/events/enddate', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (user) {
+        const eventId = req.body.eventId;
+        const date = req.body.date;
+        // Find the user's events document
+        const userEvents = await db.collection('user_events').findOne(
+            { userId: user._id },
+            { projection: { _id: 0 } }
+        ) || {};
+        let earliestDate = null;
+        // Iterate over all the dates in the user's events document
+        for (const eventDate of Object.keys(userEvents)) {
+            if (eventDate !== 'userId') {
+                for (const event of Object.values(userEvents[eventDate])) {
+                    if (event.id === eventId) {
+                        if (!earliestDate || new Date(eventDate) < new Date(earliestDate)) {
+                            earliestDate = eventDate;
+                        }
+                    }
+                }
+            }
+        }
+        if (earliestDate) {
+            // Update the user's events document to add the exception
+            await db.collection('user_events').updateOne(
+                { userId: user._id },
+                { $set: { [`${earliestDate}.${eventId}.endDate`]: date } }
+            );
+            res.send({ msg: 'Exception added successfully' });
+        } else {
+            res.status(404).send({ msg: 'Event not found' });
+        }
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
+});
+
 
 // Get and set shared events
 apiRouter.get('/shared-events', async (req, res) => {

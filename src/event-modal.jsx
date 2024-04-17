@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useEffect } from "react";
 
@@ -29,6 +30,26 @@ function EventModal({
         };
     }, [showModal, onSaveEvent, onCloseModal]);
 
+    const [localEvent, setLocalEvent] = useState({ ...editingEvent });
+
+    useEffect(() => {
+        setLocalEvent({ ...editingEvent }); // Update local state when editingEvent changes
+    }, [editingEvent]);
+
+    const handleLocalEventChange = (e) => {
+        const { name, value } = e.target;
+        setLocalEvent(prev => ({
+            ...prev,
+            [name]: name === "duration" ? parseInt(value, 10) : value,
+        }));
+    };
+
+    const handleSave = () => {
+        onSaveEvent(localEvent); // Pass the local state to save function
+        onCloseModal();
+    };
+
+
     return (
         <Modal show={showModal} onHide={onCloseModal}>
             <Modal.Header closeButton>
@@ -40,8 +61,8 @@ function EventModal({
                         <Form.Label>Event Name</Form.Label>
                         <Form.Control
                             type="text"
-                            value={editingEvent?.name || ""}
-                            onChange={onEventChange}
+                            value={localEvent?.name || ""}
+                            onChange={handleLocalEventChange}
                             name="name"
                             autoComplete="off"
                             placeholder="Name of Event"
@@ -51,8 +72,8 @@ function EventModal({
                         <Form.Label>Color</Form.Label>
                         <Form.Control
                             type="color"
-                            value={editingEvent?.color || "#000000"}
-                            onChange={onEventChange}
+                            value={localEvent?.color || "#000000"}
+                            onChange={handleLocalEventChange}
                             name="color"
                         />
                     </Form.Group>
@@ -60,8 +81,8 @@ function EventModal({
                         <Form.Label>Duration (Minutes)</Form.Label>
                         <Form.Control
                             type="number"
-                            value={editingEvent?.duration}
-                            onChange={onEventChange}
+                            value={localEvent?.duration}
+                            onChange={handleLocalEventChange}
                             name="duration"
                         />
                     </Form.Group>
@@ -70,8 +91,8 @@ function EventModal({
                         <Form.Control
                             as="textarea"
                             rows={1}
-                            value={editingEvent?.location || ""}
-                            onChange={onEventChange}
+                            value={localEvent?.location || ""}
+                            onChange={handleLocalEventChange}
                             name="location"
                             placeholder="Event Location"
                         />
@@ -81,8 +102,8 @@ function EventModal({
                         <Form.Control
                             as="textarea"
                             rows={3}
-                            value={editingEvent?.notes || ""}
-                            onChange={onEventChange}
+                            value={localEvent?.notes || ""}
+                            onChange={handleLocalEventChange}
                             name="notes"
                             placeholder="Enter any notes or additional information"
                         />
@@ -91,8 +112,8 @@ function EventModal({
                         <Form.Label>Repeat</Form.Label>
                         <Form.Control
                             as="select"
-                            value={editingEvent?.repeat || ""}
-                            onChange={onEventChange}
+                            value={localEvent?.repeat || ""}
+                            onChange={handleLocalEventChange}
                             name="repeat"
                         >
                             <option value="">None</option>
@@ -109,8 +130,8 @@ function EventModal({
                             <Form.Label>Repeat End Date</Form.Label>
                             <Form.Control
                                 type="date"
-                                value={editingEvent?.endDate || ""}
-                                onChange={onEventChange}
+                                value={localEvent?.endDate || ""}
+                                onChange={handleLocalEventChange}
                                 name="endDate"
                             />
                         </Form.Group>
@@ -131,7 +152,7 @@ function EventModal({
                 <Button variant="danger" onClick={onDeleteEvent}>
                     Delete
                 </Button>
-                <Button variant="primary" onClick={onSaveEvent}>
+                <Button variant="primary" onClick={handleSave}>
                     Save
                 </Button>
             </Modal.Footer>
