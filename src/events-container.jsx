@@ -4,10 +4,12 @@ import TimeBlock from "./timeblock";
 import Event from "./event";
 import EventModal from "./event-modal";
 import moment from "moment";
+import { Modal, Button } from "react-bootstrap";
 
 function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled }) {
     const [events, setEvents] = useState({});
     const [showModal, setShowModal] = useState(false);
+    const [showRepeatModal, setShowRepeatModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const ws = useRef(null);
@@ -140,11 +142,15 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             date: selectedDate.format("YYYY-MM-DD"),
             repeat: false,
             endDate: null,
+            repeated: false,
         };
         setEvents((prevEvents) => ({ ...prevEvents, [newEventId]: newEvent }));
     };
 
     const updateEvent = (id, updatedEvent) => {
+        if (editingEvent.repeated) {
+            setShowRepeatModal("Edit");
+        }
         setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
@@ -227,12 +233,49 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
 
     const handleDeleteEvent = async () => {
         if (editingEvent) {
+            if (editingEvent.repeated) {
+                setShowRepeatModal("Delete");
+            }
             const updatedEvents = { ...events };
             delete updatedEvents[editingEvent.id];
             setEvents(updatedEvents);
             saveEvents(updatedEvents);
             setShowModal(false);
         }
+    };
+
+    const changeJustThisEvent = () => {
+        console.log('Deleting just this event...');
+    }
+
+    const changeAllFutureEvents = () => {
+        console.log('Deleting all future events...');
+    }
+
+    const onCloseModal = () => {
+        setShowRepeatModal(false);
+    }
+
+    const RepeatConfirmationModal = ({ show, event, onDeleteJustThis, onDeleteAllFuture }) => {
+        if (!show) return null;
+        return (
+            <Modal show={show} onHide={onCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Delete Event</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>{showRepeatModal} all future instances of {event.name || "this event"}?</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onDeleteJustThis}>
+                        Just this event
+                    </Button>
+                    <Button variant="danger" onClick={onDeleteAllFuture}>
+                        All future events
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        )
     };
 
     return (
@@ -269,6 +312,12 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                 onSaveEvent={handleSaveEvent}
                 onDeleteEvent={handleDeleteEvent}
                 onEventChange={handleEventChange}
+            />
+            <RepeatConfirmationModal
+                show={showRepeatModal}
+                event={editingEvent}
+                onChangeJustThis={changeJustThisEvent}
+                onChangeAllFuture={changeAllFutureEvents}
             />
         </div>
     );
