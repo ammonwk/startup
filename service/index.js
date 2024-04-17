@@ -108,7 +108,6 @@ apiRouter.get('/events', async (req, res) => {
 
         // Create an object to store the events for the specified date
         const eventsForDate = userEvents[date] ? { [date]: userEvents[date] } : { [date]: [] };
-        console.log("eventsForDate", eventsForDate)
         // Iterate over all the dates in the user's events document
         for (const eventDate of Object.keys(userEvents)) {
             if (eventDate !== date && eventDate !== 'userId') {
@@ -117,13 +116,9 @@ apiRouter.get('/events', async (req, res) => {
                     // Check if the event should repeat on the specified date
                     if (repeatsOn(event, date)) {
                         // check for exceptions
-                        // console.log("checking for", date, "in", event.exceptions, "event", event)
                         if (event.exceptions && event.exceptions.includes(date)) {
-                            console.log("exception found", date, "in", event.exceptions, "event", event)
                             continue;
                         }
-
-                        console.log("repeated event", event, "for date", date)
 
                         if (!eventsForDate[date]) {
                             eventsForDate[date] = [event];
@@ -188,13 +183,11 @@ apiRouter.post('/events', async (req, res) => {
         console.log("nonRepeatedEvents saved", nonRepeatedEvents)
 
         // Update or insert the user's events document
-        if (Object.keys(nonRepeatedEvents).length > 0) { // Check if there are any non-repeated events to save
-            await db.collection('user_events').updateOne(
-                { userId: user._id },
-                { $set: { [`${date}`]: nonRepeatedEvents, userId: user._id } },
-                { upsert: true }
-            );
-        }
+        await db.collection('user_events').updateOne(
+            { userId: user._id },
+            { $set: { [`${date}`]: nonRepeatedEvents, userId: user._id } },
+            { upsert: true }
+        );
         res.send(nonRepeatedEvents);
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
@@ -218,10 +211,7 @@ apiRouter.post('/events/exception', async (req, res) => {
         // Iterate over all the dates in the user's events document
         for (const eventDate of Object.keys(userEvents)) {
             if (eventDate !== 'userId') {
-                // Iterate over the events for each date
-                // console.log("Iterating over events", userEvents[eventDate])
                 for (const event of Object.values(userEvents[eventDate])) {
-                    // console.log("event", event)
                     if (event.id === eventId) {
                         if (!earliestDate || new Date(eventDate) < new Date(earliestDate)) {
                             earliestDate = eventDate;
@@ -232,22 +222,10 @@ apiRouter.post('/events/exception', async (req, res) => {
         }
         if (earliestDate) {
             // Update the user's events document to add the exception
-            console.log("Before update")
-            let updated_event = await db.collection('user_events').findOne(
-                { userId: user._id },
-                { projection: { _id: 0 } }
-            );
-            console.log("updated_event", updated_event[earliestDate][eventId].exceptions)
             await db.collection('user_events').updateOne(
                 { userId: user._id },
                 { $push: { [`${earliestDate}.${eventId}.exceptions`]: date } }
             );
-            console.log("After update")
-            updated_event = await db.collection('user_events').findOne(
-                { userId: user._id },
-                { projection: { _id: 0 } }
-            );
-            console.log("updated_event", updated_event[earliestDate][eventId].exceptions)
             res.send({ msg: 'Exception added successfully' });
         } else {
             res.status(404).send({ msg: 'Event not found' });

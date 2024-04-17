@@ -12,6 +12,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const [showRepeatModal, setShowRepeatModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [movingRepeat, setMovingRepeat] = useState(false);
     const ws = useRef(null);
     const saveEventsTimeout = useRef(null);
 
@@ -151,24 +152,45 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const updateEvent = (id, updatedEvent) => {
         if (editingEvent.repeated) {
             setShowRepeatModal("Edit");
+            editingEvent.repeat = false;
+            editingEvent.repeated = false;
         }
+        editingEvent.repeated = false;
         setEvents(prevEvents => ({ ...prevEvents, [id]: updatedEvent }));
         saveEvents({ ...events, [id]: updatedEvent });
     };
 
     const moveEvent = (id, dy) => {
+        // if (prevEvents[id] && prevEvents[id].repeated) {
+        //     setShowRepeatModal("Move");
+        // }
+        console.log("Moving event: ", events[id]);
+        if (events[id].repeated) {
+            setMovingRepeat(true);
+            console.log("Moving repeat event...");
+        }
         setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
             const currentY = parseFloat(currentEvent.y);
             const updatedEvent = {
                 ...currentEvent,
                 y: `${currentY + dy}px`,
+                // repeated: false,
             };
             return { ...prevEvents, [id]: updatedEvent };
         });
     };
 
     const snapEvent = (id, newY) => {
+        console.log("Snapping event: ", id, newY);
+        if (movingRepeat) {
+            console.log("Moving repeat event...");
+            setEditingEvent(events[id]);
+            setShowRepeatModal("Move");
+            setMovingRepeat(false);
+            events[id].repeated = false;
+            events[id].repeat = false;
+        }
         setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
             const updatedEvent = {
