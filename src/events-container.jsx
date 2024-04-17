@@ -142,6 +142,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             date: selectedDate.format("YYYY-MM-DD"),
             repeat: false,
             endDate: null,
+            exceptions: [],
             repeated: false,
         };
         setEvents((prevEvents) => ({ ...prevEvents, [newEventId]: newEvent }));
@@ -236,6 +237,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             if (editingEvent.repeated) {
                 setShowRepeatModal("Delete");
             }
+            console.log("Continueing with delete...")
             const updatedEvents = { ...events };
             delete updatedEvents[editingEvent.id];
             setEvents(updatedEvents);
@@ -244,8 +246,29 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         }
     };
 
-    const changeJustThisEvent = () => {
-        console.log('Deleting just this event...');
+    const changeJustThisEvent = async (change) => {
+        // set the exception for this event
+        console.log(editingEvent)
+        console.log("Setting exception for event on: ", selectedDate.format('YYYY-MM-DD'));
+        if (editingEvent.id) {
+            try {
+                const response = await fetch(`${apiEndpoint}/exception`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        eventId: editingEvent.id,
+                        date: selectedDate.format('YYYY-MM-DD'),
+                    }),
+                });
+                const result = await response.json();
+                console.log(result.msg);
+            } catch (error) {
+                console.error("Error setting exception: ", error);
+            }
+        }
+
+        // close the modal
+        setShowRepeatModal(false);
     }
 
     const changeAllFutureEvents = () => {
@@ -256,7 +279,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         setShowRepeatModal(false);
     }
 
-    const RepeatConfirmationModal = ({ show, event, onDeleteJustThis, onDeleteAllFuture }) => {
+    const RepeatConfirmationModal = ({ show, event, onChangeJustThis, onChangeAllFuture }) => {
         if (!show) return null;
         return (
             <Modal show={show} onHide={onCloseModal}>
@@ -267,10 +290,10 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                     <p>{showRepeatModal} all future instances of {event.name || "this event"}?</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={onDeleteJustThis}>
+                    <Button variant="secondary" onClick={() => onChangeJustThis(showRepeatModal)}>
                         Just this event
                     </Button>
-                    <Button variant="danger" onClick={onDeleteAllFuture}>
+                    <Button variant="danger" onClick={onChangeAllFuture}>
                         All future events
                     </Button>
                 </Modal.Footer>
