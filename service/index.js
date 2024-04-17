@@ -103,10 +103,32 @@ apiRouter.get('/events', async (req, res) => {
         // Find the user's events document
         const userEvents = await db.collection('user_events').findOne(
             { userId: user._id },
-            { projection: { _id: 0, [date]: 1 } }
-        );
-        // If the document exists and has events for the specified date, send them; otherwise, send an empty object
-        res.send(userEvents && userEvents[date] ? userEvents[date] : {});
+            { projection: { _id: 0 } }
+        ) || {};
+
+        // Create an object to store the events for the specified date
+        const eventsForDate = userEvents[date] ? { [date]: userEvents[date] } : { [date]: [] };
+        console.log("eventsForDate", eventsForDate)
+        // Iterate over all the dates in the user's events document
+        for (const eventDate of Object.keys(userEvents)) {
+            if (eventDate !== date && eventDate !== 'userId') {
+                // Iterate over the events for each date
+                for (const event of Object.values(userEvents[eventDate])) {
+                    // Check if the event should repeat on the specified date
+                    if (repeatsOn(event, date)) {
+                        if (!eventsForDate[date]) {
+                            eventsForDate[date] = [event];
+                        } else {
+                            let event_to_add = {};
+                            event["repeated"] = true;
+                            event_to_add[event.id] = event;
+                            eventsForDate[date] = Object.assign({}, eventsForDate[date], event_to_add);
+                        }
+                    }
+                }
+            }
+        }
+        res.send(eventsForDate && eventsForDate[date] ? eventsForDate[date] : {});
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
     }
@@ -115,7 +137,7 @@ apiRouter.get('/events', async (req, res) => {
 function repeatsOn(event, date) {
     const startDate = new Date(event.date);
     const targetDate = new Date(date);
-    console.log('Checking event', event, 'for date', targetDate, 'start date', startDate);
+    // console.log('Checking event', event, 'for date', targetDate, 'start date', startDate);
     const endDate = event.endDate ? new Date(event.endDate) : null;
     if (targetDate < startDate || (endDate && targetDate > endDate)) {
         return false;
