@@ -7,6 +7,12 @@ app.use(compression({ level: 6 }));
 const { MongoClient } = require('mongodb');
 const config = require('./dbConfig.json');
 
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+    apiKey: config.openaiApiKey,
+});
+
 const url = `mongodb+srv://${config.userName}:${config.password}@${config.hostname}`;
 const client = new MongoClient(url);
 const db = client.db('rm_data');
@@ -270,6 +276,97 @@ apiRouter.post('/events/enddate', async (req, res) => {
     }
 });
 
+const prompt = `Please extract the schedule details from the image and convert them into a structured JSON format. Each event should be broken down into individual occurrences. For events that occur on multiple days within a week, create separate entries for each day of the week that the event occurs. The JSON structure for each event should include:
+A unique numeric ID for each occurrence of an event.
+The full title of the course or event, without abbreviations.
+The start time formatted as 'HH:MM AM/PM'.
+The duration, calculated as the difference between the start and end times in minutes. If the duration is not provided, assume a duration of 30 minutes.
+Choose a light color for the event, represented as a hex code. Base the color on the event title or type, using the same color for events with the same title or type.
+A 'repeat' field indicating the frequency of the event. If an event occurs multiple times in a week, each occurrence should still be marked 'weekly'. If not specified, use context clues to determine if the event is "daily", "weekly", "monthly", "yearly", or does not repeat ("").
+An 'endDate' field, if a specific end date is provided; otherwise, leave it blank.
+The 'date' field should reflect the first date the event occurs. If not specified, infer the date from the semester dates provided in the schedule context.
+An empty 'exceptions' list, unless there are specific dates mentioned where the event does not occur.
+Structure the JSON to reflect each occurrence of events that happen more than once a week, as individual 'weekly' events on their respective days, using the earliest date the repeating event would start on.
+Example JSON output:
+{
+    "event1": {
+        "id": "1",
+        "name": "Team Meeting",
+        "date": "2024-04-20",
+        "time": "10:00 AM",
+        "duration": 60,
+        "color": "#FFD700",
+        "repeat": "weekly",
+        "endDate": null,
+        "exceptions": []
+    },
+    "event2": {
+        "id": "2",
+        "name": "Project Deadline",
+        "date": "2024-04-22",
+        "time": "12:00 PM",
+        "duration": 30,
+        "color": "#FF6347",
+        "repeat": "",
+        "endDate": "2024-05-22",
+        "exceptions": [
+            "2024-05-01"
+        ]
+    },
+    "event3": {
+        "id": "3",
+        "name": "Doctor's Appointment",
+        "date": "2024-04-25",
+        "time": "03:00 PM",
+        "duration": 30,
+        "color": "#3CB371",
+        "repeat": "",
+        "endDate": null,
+        "exceptions": []
+    }
+}
+Please return JSON of the events from my attached image, and don't say anything else.`;
+
+app.post('/api/gpt-parse-image', async (req, res) => {
+    const { image_data } = req.body;  // Receive the Base64 encoded image data
+
+    // Check if the image data is provided
+    if (!image_data) {
+        return res.status(400).send({ msg: 'No image data provided' });
+    }
+
+    try {
+        // API call to OpenAI's GPT API
+        const completion = await openai.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful assistant designed to output JSON.",
+                },
+                {
+                    role: "user", content: [
+                        { type: 'text', text: prompt },
+                        {
+                            type: 'image_url',
+                            image_url: {
+                                "url": `data:image/jpeg;base64,${image_data}`
+                            }
+                        }
+                    ]
+                },
+            ],
+            model: "gpt-4-turbo-2024-04-09",
+            response_format: { type: "json_object" },
+        });
+        // Sending the processed response back to the client
+        res.json(completion.choices[0].message.content);
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).send({ msg: 'Failed to process the image', error: error.message });
+    }
+});
+
+
 
 apiRouter.post('/events/import-events', async (req, res) => {
     const token = req.cookies.token;
@@ -277,9 +374,6 @@ apiRouter.post('/events/import-events', async (req, res) => {
     if (!user) {
         return res.status(401).send({ msg: 'Unauthorized' });
     }
-
-    console.log('Importing events for user', user.username);
-    console.log('Events:', req.body);
 
     const eventsDict = req.body;
     if (!eventsDict || Object.keys(eventsDict).length === 0) {

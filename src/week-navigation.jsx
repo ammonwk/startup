@@ -46,16 +46,35 @@ function WeekNavigation({
 
     const handleFileImport = async (event) => {
         const file = event.target.files[0];
-        if (file && file.type === "application/json") {
+        if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const jsonData = e.target.result;
-                previewImportEvents(jsonData); // Pass the JSON data up to the parent to handle
+            reader.onload = async (e) => {
+                const base64Image = e.target.result.split(',')[1]; // Remove the header part from the result
+                try {
+                    console.log("Uploading image...")
+                    const response = await fetch('/api/gpt-parse-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            image_data: base64Image, // Send only the base64 part to match your backend handling
+                        }),
+                    });
+                    const data = await response.json();
+                    // Here you could update state or alert the user with the response
+                    console.log(data); // Log or handle the response data
+                    const jsonData = data; // Assuming the response is a JSON object
+                    previewImportEvents(jsonData); // Pass the JSON data up to the parent to handle
+                    event.target.value = ''; // Clear the input after reading
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    alert('Failed to process image');
+                }
             };
-            reader.readAsText(file);
+            reader.readAsDataURL(file);
             event.target.value = ''; // Clear the input after reading
         } else {
-            console.error('Please upload a valid JSON file.');
+            console.error('Please upload a valid image file (JPEG or PNG).');
+            alert('Invalid file type. Please select a JPEG or PNG image.');
         }
     };
 
@@ -132,8 +151,10 @@ function WeekNavigation({
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={onClearEvents}>Clear Today's Events</Dropdown.Item>
-                        <Dropdown.Item as="label" htmlFor="importFile">Import Events from JSON</Dropdown.Item>
-                        <input type="file" id="importFile" style={{ display: 'none' }} onChange={handleFileImport} />
+                        <Dropdown.Item onClick={() => document.getElementById('imageInput').click()}>
+                            Import Events from Image
+                        </Dropdown.Item>
+                        <input type="file" id="imageInput" style={{ display: 'none' }} accept="image/jpeg, image/png" onChange={handleFileImport} />
                     </Dropdown.Menu>
                 </Dropdown>
             </div>

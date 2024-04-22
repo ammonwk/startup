@@ -383,6 +383,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                         id: newEventId,
                         date: eventDate,
                         y: `${yPosition}px`, // Set the calculated y position
+                        color: event.color || "#ffffff",
                     };
                 });
                 console.log('Imported events:', newEvents);
