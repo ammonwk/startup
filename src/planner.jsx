@@ -75,7 +75,7 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
                     }
                     return prevProgress + 1;
                 });
-            }, 600); // Update progress every 600ms to fill 100% in 60 seconds
+            }, 450); // Update progress every 450ms to fill 100% in 45 seconds
         } else {
             setProgress(0);
         }
