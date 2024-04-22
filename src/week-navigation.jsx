@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Dropdown } from "react-bootstrap";
 import Calendar from "react-calendar";
 import moment from "moment";
 
@@ -115,20 +115,27 @@ function WeekNavigation({
                 onCancel={handleCancelImport}
             />
             <div className="planner-menu">
-                <Button id="empty-day" variant="link" onClick={onClearEvents}>Empty Day</Button>
-                <input type="file" id="importFile" style={{ display: 'none' }} onChange={handleFileImport} />
-                <label htmlFor="importFile" style={{ cursor: 'pointer' }}>Import Events</label>
-                <Button id="current-day-button" variant="link" onClick={toggleDropdown}>
-                    {selectedDate.format("MMMM D, YYYY")} <i className="arrow down"></i>
+                <Button className="menu-button" variant="link" onClick={toggleDropdown}>
+                    {selectedDate.format("MMMM D, 'YY")} <i className="arrow down"></i>
                 </Button>
                 <Button className="today-button" onClick={onGoToToday}>
-                    Today
+                    To Today
                 </Button>
                 {showDropdown && (
                     <div className="dropdown-calendar" ref={dropdownRef}>
                         <Calendar value={selectedDate.toDate()} onChange={onDateChange} />
                     </div>
                 )}
+                <Dropdown>
+                    <Dropdown.Toggle className="menu-button" variant="link" id="dropdown-basic">
+                        Actions
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={onClearEvents}>Clear Today's Events</Dropdown.Item>
+                        <Dropdown.Item as="label" htmlFor="importFile">Import Events from JSON</Dropdown.Item>
+                        <input type="file" id="importFile" style={{ display: 'none' }} onChange={handleFileImport} />
+                    </Dropdown.Menu>
+                </Dropdown>
             </div>
             <div className="week-navigation">
                 <Button variant="link" onClick={onGoToPreviousWeek}>

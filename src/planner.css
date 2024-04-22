@@ -63,7 +63,7 @@ div.hr {
     margin-bottom: 10px;
 }
 
-#current-day-button {
+.menu-button {
     background: none;
     border: none;
     color: #4f4f4f;
