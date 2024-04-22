@@ -11,7 +11,7 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
     const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
 
     const clearEvents = () => {
-        setClearEventsTrigger(prev => !prev); // Toggle to trigger effect in EventsContainer
+        setClearEventsTrigger(prev => prev + 1); // Change to trigger effect in EventsContainer
     };
 
     useEffect(() => {

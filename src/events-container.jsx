@@ -94,9 +94,7 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     }
 
     useEffect(() => {
-        if (clearEventsTrigger) {
-            clearEvents(); // The function you provided to reset events
-        }
+        clearEvents();
     }, [clearEventsTrigger]);
 
     const loadEvents = async (date) => {
