@@ -9,9 +9,14 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
     const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
+    const [importEventsData, setImportEventsData] = useState(null);
 
     const clearEvents = () => {
         setClearEventsTrigger(prev => prev + 1); // Change to trigger effect in EventsContainer
+    };
+
+    const triggerImport = (jsonData) => {
+        setImportEventsData(jsonData); // Pass JSON data to the EventsContainer
     };
 
     useEffect(() => {
@@ -82,13 +87,15 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
                 onGoToPreviousWeek={goToPreviousWeek}
                 onGoToNextWeek={goToNextWeek}
                 onClearEvents={clearEvents}
+                onImportEvents={triggerImport}
             />
             <EventsContainer
                 selectedDate={selectedDate}
                 apiEndpoint={apiEndpoint}
                 shared={shared}
                 clearEventsTrigger={clearEventsTrigger}
-                localStorageEnabled={localStorageEnabled} />
+                localStorageEnabled={localStorageEnabled}
+                importEventsData={importEventsData} />
             <p className="quote">Fetched Quote: {quote}</p>
         </div>
     );

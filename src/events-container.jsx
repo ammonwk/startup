@@ -6,15 +6,13 @@ import EventModal from "./event-modal";
 import moment from "moment";
 import { Modal, Button } from "react-bootstrap";
 
-function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled }) {
+function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger, localStorageEnabled, importEventsData }) {
     const [events, setEvents] = useState({});
     const [showModal, setShowModal] = useState(false);
     const [showRepeatModal, setShowRepeatModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [movingRepeat, setMovingRepeat] = useState(false);
-    const [showImportModal, setShowImportModal] = useState(false);
-    const [previewEvents, setPreviewEvents] = useState(null);
 
     const ws = useRef(null);
     const saveEventsTimeout = useRef(null);
@@ -358,6 +356,12 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         )
     };
 
+    useEffect(() => {
+        if (importEventsData) {
+            importEvents(importEventsData); // Function to process import data
+        }
+    }, [importEventsData]);
+
     const importEvents = (jsonData) => {
         try {
             const importedEvents = JSON.parse(jsonData);
@@ -406,81 +410,10 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         }
     }
 
-    const ImportConfirmationModal = ({ show, onConfirm, onCancel }) => {
-        if (!show || !previewEvents) return null;
-        return (
-            <Modal show={show} onHide={onCancel}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirm Import</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p>Are you sure you want to import the following events?</p>
-                    <ul>
-                        {Object.entries(previewEvents).map(([id, event]) => (
-                            <li key={id}>{event.name} on {event.date} at {event.time}</li>
-                        ))}
-                    </ul>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={onCancel}>Cancel</Button>
-                    <Button variant="primary" onClick={() => onConfirm(previewEvents)}>Import</Button>
-                </Modal.Footer>
-            </Modal>
-        );
-    };
-
-
-    const previewImportEvents = (jsonData) => {
-        try {
-            const parsedEvents = JSON.parse(jsonData);
-            if (typeof parsedEvents === 'object' && parsedEvents !== null) {
-                setPreviewEvents(parsedEvents);
-                setShowImportModal(true);
-            } else {
-                throw new Error("Invalid JSON data for events.");
-            }
-        } catch (error) {
-            console.error("Failed to parse events for preview:", error);
-            setShowImportModal(false);
-        }
-    };
-
-    const handleConfirmImport = (eventsToImport) => {
-        importEvents(JSON.stringify(eventsToImport)); // Use the importEvents function here
-        setShowImportModal(false);
-    };
-
-    const handleCancelImport = () => {
-        setShowImportModal(false);
-    };
-
-    const handleFileImport = async (event) => {
-        const file = event.target.files[0];
-        if (file && file.type === "application/json") {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                previewImportEvents(text); // Change to preview first
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        } else {
-            console.error('Please upload a valid JSON file.');
-        }
-    };
 
 
     return (
         <>
-            <input type="file" id="importFile" style={{ display: 'none' }} onChange={handleFileImport} />
-            <label htmlFor="importFile" style={{ cursor: 'pointer' }}>Import Events</label>
-
-            <ImportConfirmationModal
-                show={showImportModal}
-                onConfirm={handleConfirmImport}
-                onCancel={handleCancelImport}
-            />
-
             <div id="events-container">
                 {[...Array(17)].map((_, index) => (
                     <React.Fragment key={index}>
