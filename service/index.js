@@ -365,15 +365,48 @@ app.post('/api/gpt-parse-image', async (req, res) => {
             model: "gpt-4-turbo-2024-04-09",
             response_format: { type: "json_object" },
         });
-        // Sending the processed response back to the client
-        // console.log('Processed image:', completion.choices[0].message.content)
-        res.json(completion.choices[0].message.content);
+        let data = completion.choices[0].message.content;
+
+        // Replace "Wednesday" with last Wednesday's date, etc.
+        data = replaceDayNamesWithDatesInEvents(JSON.parse(data));
+        // wrap the data in a JSON object
+        data = JSON.stringify(data);
+        res.json(data);
     } catch (error) {
         console.error('Error processing image:', error);
         res.status(500).send({ msg: 'Failed to process the image', error: error.message });
     }
 });
 
+const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function replaceDayNamesWithDatesInEvents(data) {
+    const keys = Object.keys(data);
+    keys.forEach(eventKey => {
+        console.log(eventKey, data[eventKey])
+        const event = data[eventKey];
+        if (daysOfWeek.includes(event.date)) {
+            event.date = getMostRecentDay(event.date);
+        }
+    });
+    return data;
+}
+
+function getMostRecentDay(dayName) {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // Sunday - 0, Monday - 1, ..., Saturday - 6
+    const targetDay = daysOfWeek.indexOf(dayName); // Get index of the target day
+
+    let diff = dayOfWeek - targetDay;
+    if (diff < 0) {
+        // If target day is ahead in the week (e.g., today is Tuesday and target is Friday)
+        diff += 7; // Ensure positive difference
+    }
+
+    const mostRecentDay = new Date();
+    mostRecentDay.setDate(today.getDate() - diff);
+    return mostRecentDay.toISOString().split('T')[0]; // Return in YYYY-MM-DD format
+}
 
 
 apiRouter.post('/events/import-events', async (req, res) => {
