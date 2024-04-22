@@ -271,6 +271,54 @@ apiRouter.post('/events/enddate', async (req, res) => {
 });
 
 
+apiRouter.post('/events/import-events', async (req, res) => {
+    const token = req.cookies.token;
+    const user = await db.collection('users').findOne({ token: token });
+    if (!user) {
+        return res.status(401).send({ msg: 'Unauthorized' });
+    }
+
+    console.log('Importing events for user', user.username);
+    console.log('Events:', req.body);
+
+    const eventsDict = req.body;
+    if (!eventsDict || Object.keys(eventsDict).length === 0) {
+        return res.status(400).send({ msg: 'No events to import' });
+    }
+
+    try {
+        const bulkOps = [];
+        Object.keys(eventsDict).forEach(eventId => {
+            const event = eventsDict[eventId];
+            if (event && event.date) {
+                // Creates a dynamic key using the event's date
+                const dateKey = event.date;
+                const update = { $set: {} };
+                update.$set[`${dateKey}.${eventId}`] = event;
+
+                bulkOps.push({
+                    updateOne: {
+                        filter: { userId: user._id },
+                        update: update,
+                        upsert: true
+                    }
+                });
+            }
+        });
+
+        if (bulkOps.length > 0) {
+            await db.collection('user_events').bulkWrite(bulkOps);
+            res.status(200).send({ msg: 'Events imported successfully' });
+        } else {
+            res.status(400).send({ msg: 'No valid events to process' });
+        }
+    } catch (error) {
+        console.error("Error importing events:", error);
+        res.status(500).send({ msg: 'Error importing events', error: error.message });
+    }
+});
+
+
 // Get and set shared events
 apiRouter.get('/shared-events', async (req, res) => {
     const date = req.query.date;

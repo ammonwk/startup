@@ -13,6 +13,9 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
     const [editingEvent, setEditingEvent] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const [movingRepeat, setMovingRepeat] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [previewEvents, setPreviewEvents] = useState(null);
+
     const ws = useRef(null);
     const saveEventsTimeout = useRef(null);
 
@@ -357,48 +360,171 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         )
     };
 
+    const importEvents = (jsonData) => {
+        try {
+            const importedEvents = JSON.parse(jsonData);
+            if (typeof importedEvents === 'object' && importedEvents !== null) {
+                let newEvents = { ...events }; // Start with current events
+                Object.keys(importedEvents).forEach(key => {
+                    const event = importedEvents[key];
+                    const newEventId = uuidv4();
+                    const eventDate = event.date ? moment(event.date).format("YYYY-MM-DD") : selectedDate.format("YYYY-MM-DD");
+
+                    // Calculate the y position based on the event start time
+                    const startTime = moment(event.time, "hh:mm A");
+                    const baseTime = moment("06:00", "hh:mm A");
+                    const hoursFromBase = startTime.diff(baseTime, 'hours', true);
+                    const yPosition = hoursFromBase * 68; // One hour corresponds to 68 pixels
+
+                    newEvents[newEventId] = {
+                        ...event,
+                        id: newEventId,
+                        date: eventDate,
+                        y: `${yPosition}px`, // Set the calculated y position
+                    };
+                });
+                console.log('Imported events:', newEvents);
+                saveEventsToServer(newEvents); // Save the imported events to the server
+                loadEvents(selectedDate); // Reload the events from the server
+            } else {
+                throw new Error("Invalid JSON data for events.");
+            }
+        } catch (error) {
+            console.error("Failed to import events:", error);
+        }
+    };
+
+    async function saveEventsToServer(updatedEvents) {
+        try {
+            const response = await fetch(`${apiEndpoint}/import-events`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(updatedEvents),
+            });
+            if (!response.ok) throw new Error('Failed to save imported events.');
+            console.log('Events saved successfully to server.');
+        } catch (error) {
+            console.error("Failed to save imported events:", error);
+        }
+    }
+
+    const ImportConfirmationModal = ({ show, onConfirm, onCancel }) => {
+        if (!show || !previewEvents) return null;
+        return (
+            <Modal show={show} onHide={onCancel}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Import</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Are you sure you want to import the following events?</p>
+                    <ul>
+                        {Object.entries(previewEvents).map(([id, event]) => (
+                            <li key={id}>{event.name} on {event.date} at {event.time}</li>
+                        ))}
+                    </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+                    <Button variant="primary" onClick={() => onConfirm(previewEvents)}>Import</Button>
+                </Modal.Footer>
+            </Modal>
+        );
+    };
+
+
+    const previewImportEvents = (jsonData) => {
+        try {
+            const parsedEvents = JSON.parse(jsonData);
+            if (typeof parsedEvents === 'object' && parsedEvents !== null) {
+                setPreviewEvents(parsedEvents);
+                setShowImportModal(true);
+            } else {
+                throw new Error("Invalid JSON data for events.");
+            }
+        } catch (error) {
+            console.error("Failed to parse events for preview:", error);
+            setShowImportModal(false);
+        }
+    };
+
+    const handleConfirmImport = (eventsToImport) => {
+        importEvents(JSON.stringify(eventsToImport)); // Use the importEvents function here
+        setShowImportModal(false);
+    };
+
+    const handleCancelImport = () => {
+        setShowImportModal(false);
+    };
+
+    const handleFileImport = async (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === "application/json") {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                previewImportEvents(text); // Change to preview first
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        } else {
+            console.error('Please upload a valid JSON file.');
+        }
+    };
+
+
     return (
-        <div id="events-container">
-            {[...Array(17)].map((_, index) => (
-                <React.Fragment key={index}>
-                    <div className="hr" />
-                    <TimeBlock hour={6 + index} onCreateEvent={createEvent} onSnapEvent={snapEvent} isDragging={isDragging} />
-                    <TimeBlock
-                        hour={6 + index + 0.5}
-                        onCreateEvent={createEvent}
+        <>
+            <input type="file" id="importFile" style={{ display: 'none' }} onChange={handleFileImport} />
+            <label htmlFor="importFile" style={{ cursor: 'pointer' }}>Import Events</label>
+
+            <ImportConfirmationModal
+                show={showImportModal}
+                onConfirm={handleConfirmImport}
+                onCancel={handleCancelImport}
+            />
+
+            <div id="events-container">
+                {[...Array(17)].map((_, index) => (
+                    <React.Fragment key={index}>
+                        <div className="hr" />
+                        <TimeBlock hour={6 + index} onCreateEvent={createEvent} onSnapEvent={snapEvent} isDragging={isDragging} />
+                        <TimeBlock
+                            hour={6 + index + 0.5}
+                            onCreateEvent={createEvent}
+                            onSnapEvent={snapEvent}
+                            isDragging={isDragging}
+                            isHalf
+                        />
+                    </React.Fragment>
+                ))}
+                {Object.values(events).map((event) => (
+                    <Event
+                        key={event.id}
+                        event={event}
+                        events={Object.values(events)}
+                        onMoveEvent={moveEvent}
                         onSnapEvent={snapEvent}
+                        onEditEvent={handleEditEvent}
                         isDragging={isDragging}
-                        isHalf
+                        setIsDragging={setIsDragging}
                     />
-                </React.Fragment>
-            ))}
-            {Object.values(events).map((event) => (
-                <Event
-                    key={event.id}
-                    event={event}
-                    events={Object.values(events)}
-                    onMoveEvent={moveEvent}
-                    onSnapEvent={snapEvent}
-                    onEditEvent={handleEditEvent}
-                    isDragging={isDragging}
-                    setIsDragging={setIsDragging}
+                ))}
+                <EventModal
+                    showModal={showModal}
+                    editingEvent={editingEvent}
+                    onCloseModal={handleCloseModal}
+                    onSaveEvent={handleSaveEvent}
+                    onDeleteEvent={handleDeleteEvent}
+                    onEventChange={handleEventChange}
                 />
-            ))}
-            <EventModal
-                showModal={showModal}
-                editingEvent={editingEvent}
-                onCloseModal={handleCloseModal}
-                onSaveEvent={handleSaveEvent}
-                onDeleteEvent={handleDeleteEvent}
-                onEventChange={handleEventChange}
-            />
-            <RepeatConfirmationModal
-                show={showRepeatModal}
-                event={editingEvent}
-                onChangeJustThis={changeJustThisEvent}
-                onChangeAllFuture={() => changeAllFutureEvents(showRepeatModal)}
-            />
-        </div>
+                <RepeatConfirmationModal
+                    show={showRepeatModal}
+                    event={editingEvent}
+                    onChangeJustThis={changeJustThisEvent}
+                    onChangeAllFuture={() => changeAllFutureEvents(showRepeatModal)}
+                />
+            </div>
+        </>
     );
 }
 
