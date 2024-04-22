@@ -4,12 +4,17 @@ import moment from "moment";
 import { NavLink } from "react-router-dom";
 import WeekNavigation from "./week-navigation";
 import EventsContainer from "./events-container";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabled }) {
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
     const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
     const [importEventsData, setImportEventsData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+
 
     const clearEvents = () => {
         setClearEventsTrigger(prev => prev + 1); // Change to trigger effect in EventsContainer
@@ -59,6 +64,44 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
         setSelectedDate((prevDate) => prevDate.clone().add(1, "week"));
     };
 
+    useEffect(() => {
+        let interval = null;
+        if (loading) {
+            interval = setInterval(() => {
+                setProgress(prevProgress => {
+                    if (prevProgress >= 100) {
+                        clearInterval(interval);
+                        return 100;
+                    }
+                    return prevProgress + 1;
+                });
+            }, 600); // Update progress every 600ms to fill 100% in 60 seconds
+        } else {
+            setProgress(0);
+        }
+        return () => clearInterval(interval);
+    }, [loading]);
+
+    const LoadingBanner = () => {
+        if (!loading) return null;
+        return (
+            <div id="loading-bar">
+                <div style={{ width: 50, height: 50, margin: 'auto' }}>
+                    <CircularProgressbar
+                        value={progress}
+                        id="progress-bar"
+                        text={`${progress}%`}
+                        styles={buildStyles({
+                            pathColor: `rgba(62, 152, 199, ${progress / 100})`,
+                            textColor: '#fff',
+                        })}
+                    />
+                </div>
+                <p id="loading-text">Analyzing your image... This may take up to a minute...</p>
+            </div>
+        );
+    };
+
     return (
         <div className="container">
             <h2 className="welcome">
@@ -88,6 +131,7 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
                 onGoToNextWeek={goToNextWeek}
                 onClearEvents={clearEvents}
                 onImportEvents={triggerImport}
+                setLoading={setLoading}
             />
             <EventsContainer
                 selectedDate={selectedDate}
@@ -97,6 +141,7 @@ export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabl
                 localStorageEnabled={localStorageEnabled}
                 importEventsData={importEventsData} />
             <p className="quote">Fetched Quote: {quote}</p>
+            <LoadingBanner />
         </div>
     );
 }

@@ -215,3 +215,35 @@ div.hr {
     background-color: rgb(13, 109, 252, 0.6);
     border-color: rgb(13, 109, 252, 0.8);
 }
+
+#loading-bar {
+    position: fixed;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: auto;
+    min-width: 200px;
+}
+
+#progress-bar {
+    width: 50px;
+    /* Adjust based on the actual size of the circular progress bar */
+    height: 50px;
+    /* Same as width */
+    margin-right: 20px;
+    /* Space between the progress bar and the text */
+}
+
+#loading-text {
+    color: white;
+    font-size: 16px;
+    margin: 12px;
+}

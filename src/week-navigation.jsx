@@ -3,7 +3,6 @@ import { Modal, Button, Dropdown } from "react-bootstrap";
 import Calendar from "react-calendar";
 import moment from "moment";
 
-
 function WeekNavigation({
     selectedDate,
     onDateChange,
@@ -12,6 +11,7 @@ function WeekNavigation({
     onGoToNextWeek,
     onClearEvents,
     onImportEvents,
+    setLoading
 }) {
     const [showDropdown, setShowDropdown] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
@@ -46,12 +46,17 @@ function WeekNavigation({
 
     const handleFileImport = async (event) => {
         const file = event.target.files[0];
+        // Make sure the file is under 10MB and is a JPEG or PNG image
+        if (file && file.size > 10 * 1024 * 1024) {
+            alert('File size exceeds 10MB. Please select a smaller file.');
+            return;
+        }
         if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64Image = e.target.result.split(',')[1]; // Remove the header part from the result
                 try {
-                    console.log("Uploading image...")
+                    setLoading(true);
                     const response = await fetch('/api/gpt-parse-image', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -60,14 +65,12 @@ function WeekNavigation({
                         }),
                     });
                     const data = await response.json();
-                    // Here you could update state or alert the user with the response
-                    console.log(data); // Log or handle the response data
-                    const jsonData = data; // Assuming the response is a JSON object
-                    previewImportEvents(jsonData); // Pass the JSON data up to the parent to handle
+                    previewImportEvents(data); // Pass the JSON data up to the parent to handle
                     event.target.value = ''; // Clear the input after reading
                 } catch (error) {
-                    console.error('Error uploading image:', error);
-                    alert('Failed to process image');
+                    console.error('Please upload a valid image file (JPEG or PNG).');
+                    alert('Invalid file type. Please select a JPEG or PNG image.');
+                    setLoading(false);
                 }
             };
             reader.readAsDataURL(file);
@@ -90,6 +93,8 @@ function WeekNavigation({
         } catch (error) {
             console.error("Failed to parse events for preview:", error);
             setShowImportModal(false);
+        } finally {
+            setLoading(false);
         }
     };
 

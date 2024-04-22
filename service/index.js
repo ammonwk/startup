@@ -278,10 +278,10 @@ apiRouter.post('/events/enddate', async (req, res) => {
 
 const prompt = `Please extract the schedule details from the image and convert them into a structured JSON format. Each event should be broken down into individual occurrences. For events that occur on multiple days within a week, create separate entries for each day of the week that the event occurs. The JSON structure for each event should include:
 A unique numeric ID for each occurrence of an event.
-The full title of the course or event, without abbreviations.
+The full title of the event, including any prefixes and expanding abbreviations without adding any words.
 The start time formatted as 'HH:MM AM/PM'.
 The duration, calculated as the difference between the start and end times in minutes. If the duration is not provided, assume a duration of 30 minutes.
-Choose a light color for the event, represented as a hex code. Base the color on the event title or type, using the same color for events with the same title or type.
+Choose a pastel color hex code for the event, represented as a hex code. Base the color on the event title or type, using the same color for events with the same title or type.
 A 'repeat' field indicating the frequency of the event. If an event occurs multiple times in a week, each occurrence should still be marked 'weekly'. If not specified, use context clues to determine if the event is "daily", "weekly", "monthly", "yearly", or does not repeat ("").
 An 'endDate' field, if a specific end date is provided; otherwise, leave it blank.
 The 'date' field should reflect the first date the event occurs. If not specified, infer the date from the semester dates provided in the schedule context.
@@ -325,6 +325,9 @@ Example JSON output:
         "exceptions": []
     }
 }
+Emphasize each occurrence of weekly events on their respective days as separate entries in the JSON, starting from the earliest date the event would occur.
+DO NOT miss or skip any events. If an event is not clear or missing, leave the field empty or use context clues to infer the information.
+
 Please return JSON of the events from my attached image, and don't say anything else.`;
 
 app.post('/api/gpt-parse-image', async (req, res) => {
