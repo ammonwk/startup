@@ -55,7 +55,7 @@ async function createUser(username, password) {
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
 // Middleware - Static file hosting
-app.use(express.json()); // Parse JSON bodies
+app.use(express.json({ limit: '10mb' })); // Parse JSON bodies
 app.use(express.static('public')); // Serve the public directory as static files
 app.use(cookieParser()); // Parse cookies
 

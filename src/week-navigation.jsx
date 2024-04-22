@@ -46,39 +46,57 @@ function WeekNavigation({
 
     const handleFileImport = async (event) => {
         const file = event.target.files[0];
-        // Make sure the file is under 10MB and is a JPEG or PNG image
-        if (file && file.size > 10 * 1024 * 1024) {
+        if (!file) return;
+
+        // Make sure the file is under 10MB
+        if (file.size > 10 * 1024 * 1024) {
             alert('File size exceeds 10MB. Please select a smaller file.');
             return;
         }
-        if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Image = e.target.result.split(',')[1]; // Remove the header part from the result
+
+        const allowedImageTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff", "image/heic"];
+        if (!allowedImageTypes.includes(file.type)) {
+            alert(`${file.type} is an invalid file type. Please upload a jpg, png, gif, bmp, tiff, or heic image file.`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                // Convert and optionally compress the image
+                const targetFormat = 'image/jpeg'; // You can choose 'image/png' if you prefer
+                const quality = 1; // Compression quality for JPEG (0-1 scale, with 1 being the highest quality)
+                const base64Image = canvas.toDataURL(targetFormat, quality).split(',')[1];
+
                 try {
                     setLoading(true);
                     const response = await fetch('/api/gpt-parse-image', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            image_data: base64Image, // Send only the base64 part to match your backend handling
+                            image_data: base64Image,
                         }),
                     });
                     const data = await response.json();
-                    previewImportEvents(data); // Pass the JSON data up to the parent to handle
-                    event.target.value = ''; // Clear the input after reading
+                    previewImportEvents(data);
                 } catch (error) {
-                    console.error('Please upload a valid image file (JPEG or PNG).');
-                    alert('Invalid file type. Please select a JPEG or PNG image.');
+                    console.error('Error processing the image file.');
+                    alert(`Error: ${error.message}`);
                     setLoading(false);
+                } finally {
+                    event.target.value = ''; // Clear the input field to allow for re-uploads
                 }
             };
-            reader.readAsDataURL(file);
-            event.target.value = ''; // Clear the input after reading
-        } else {
-            console.error('Please upload a valid image file (JPEG or PNG).');
-            alert('Invalid file type. Please select a JPEG or PNG image.');
-        }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     };
 
     const previewImportEvents = (jsonData) => {
