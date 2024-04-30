@@ -57,35 +57,41 @@ function EventModal({
             </Modal.Header>
             <Modal.Body>
                 <Form>
-                    <Form.Group>
-                        <Form.Label>Event Name</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={localEvent?.name || ""}
-                            onChange={handleLocalEventChange}
-                            name="name"
-                            autoComplete="off"
-                            placeholder="Name of Event"
-                        />
-                    </Form.Group>
-                    <Form.Group>
-                        <Form.Label>Color</Form.Label>
-                        <Form.Control
-                            type="color"
-                            value={localEvent?.color || "#000000"}
-                            onChange={handleLocalEventChange}
-                            name="color"
-                        />
-                    </Form.Group>
-                    <Form.Group>
-                        <Form.Label>Duration (Minutes)</Form.Label>
-                        <Form.Control
-                            type="number"
-                            value={localEvent?.duration}
-                            onChange={handleLocalEventChange}
-                            name="duration"
-                        />
-                    </Form.Group>
+                    <div className="form-row">
+                        <Form.Group className="form-name">
+                            <Form.Label>Event Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={localEvent?.name || ""}
+                                onChange={handleLocalEventChange}
+                                name="name"
+                                autoComplete="off"
+                                placeholder="Name of Event"
+                            />
+                        </Form.Group>
+                        <Form.Group className="form-color">
+                            <Form.Label>Color</Form.Label>
+                            <Form.Control
+                                type="color"
+                                value={localEvent?.color || "#000000"}
+                                onChange={handleLocalEventChange}
+                                name="color"
+                            />
+                        </Form.Group>
+                    </div>
+                    <div className="form-row">
+                        <Form.Group className="form-duration">
+                            <Form.Label>Duration (Mins)</Form.Label>
+                            <Form.Control
+                                type="number"
+                                value={localEvent?.duration}
+                                onChange={handleLocalEventChange}
+                                name="duration"
+                                min="0"
+                                step="5"  // Allows increments of 5 minutes
+                            />
+                        </Form.Group>
+                    </div>
                     <Form.Group>
                         <Form.Label>Location</Form.Label>
                         <Form.Control
@@ -125,7 +131,7 @@ function EventModal({
                         </Form.Control>
                     </Form.Group>
 
-                    {editingEvent?.repeat && (
+                    {localEvent?.repeat && (
                         <Form.Group>
                             <Form.Label>Repeat End Date</Form.Label>
                             <Form.Control
@@ -137,7 +143,7 @@ function EventModal({
                         </Form.Group>
                     )}
 
-                    {editingEvent?.repeat === "custom" && (
+                    {localEvent?.repeat === "custom" && (
                         <Form.Group>
                             <Form.Label>Custom Repeat Pattern</Form.Label>
                             {/* Add form fields for custom repetition pattern */}
