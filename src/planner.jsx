@@ -10,7 +10,7 @@ import 'react-circular-progressbar/dist/styles.css';
 export function Planner({ apiEndpoint, welcomeMessage, shared, localStorageEnabled }) {
     const [quote, setQuote] = useState("Loading quote...");
     const [selectedDate, setSelectedDate] = useState(moment());
-    const [clearEventsTrigger, setClearEventsTrigger] = useState(false);
+    const [clearEventsTrigger, setClearEventsTrigger] = useState(0);
     const [importEventsData, setImportEventsData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
