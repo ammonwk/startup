@@ -247,3 +247,42 @@ div.hr {
     font-size: 16px;
     margin: 12px;
 }
+
+.form-row {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: left;
+}
+
+.form-name {
+    flex: 1;
+    max-width: calc(100% - 2.5em);
+}
+
+.form-color {
+    flex: 0;
+    width: 2.5em;
+}
+
+.form-end-time {
+    flex: 0;
+    width: calc(100% - 5em);
+}
+
+.form-duration {
+    flex: 0;
+    width: 5em;
+}
+
+.react-datepicker-wrapper {
+    font-size: 0.8em;
+    /* Reduce font size */
+    padding: 5px;
+    /* Adjust padding */
+    width: 100%;
+}
+
+.react-datepicker {
+    width: auto;
+    /* Adjust width if needed */
+}

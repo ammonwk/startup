@@ -71,21 +71,3 @@ main {
     align-items: center;
     padding: 2em;
 }
-
-.form-row {
-    display: flex;
-    /* justify-content: space-between; */
-    align-items: center;
-}
-
-.form-name {
-    flex: 1;
-    margin-right: 10px;
-    max-width: calc(100% - 2.5em);
-}
-
-.form-color {
-    flex: 0;
-    margin-right: 10px;
-    width: 2.5em;
-}

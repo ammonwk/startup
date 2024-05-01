@@ -51,7 +51,7 @@ function EventModal({
         onCloseModal();
     };
 
-    const handleTimeChange = (date) => {
+    const handleStartTimeChange = (date) => {
         const hours = date.getHours();
         const minutes = date.getMinutes();
         const hourFloat = hours + minutes / 60;
@@ -60,6 +60,16 @@ function EventModal({
             hour: hourFloat
         }));
     };
+
+    const handleEndTimeChange = (date) => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const hourFloat = hours + minutes / 60;
+        setLocalEvent(prev => ({
+            ...prev,
+            duration: (hourFloat - prev.hour) * 60
+        }));
+    }
 
     return (
         <Modal show={showModal} onHide={onCloseModal}>
@@ -90,7 +100,7 @@ function EventModal({
                             />
                         </Form.Group>
                     </div>
-                    {localEvent?.hour && (<Form.Group className="form-start-time">
+                    {localEvent?.hour && (<Form.Group>
                         <Form.Label>Start Time</Form.Label>
                         <DatePicker
                             selected={new Date(new Date().setHours(
@@ -98,7 +108,7 @@ function EventModal({
                                 Math.round((localEvent.hour % 1) * 60),
                                 0
                             ))}
-                            onChange={date => handleTimeChange(date)}
+                            onChange={date => handleStartTimeChange(date)}
                             showTimeSelect
                             showTimeSelectOnly
                             timeIntervals={30}
@@ -108,8 +118,27 @@ function EventModal({
                         />
                     </Form.Group>)}
                     <div className="form-row">
+                        {localEvent?.hour && (
+                            <Form.Group className="form-end-time">
+                                <Form.Label>End Time</Form.Label>
+                                <DatePicker
+                                    selected={new Date(new Date().setHours(
+                                        Math.floor(localEvent.hour) + Math.floor(localEvent.duration / 60),
+                                        Math.round((localEvent.hour % 1) * 60) + (localEvent.duration % 60),
+                                        0
+                                    ))}
+                                    onChange={date => handleEndTimeChange(date)}
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeIntervals={30}
+                                    timeCaption="Time"
+                                    dateFormat="h:mm aa"
+                                    className="form-control"
+                                />
+                            </Form.Group>
+                        )}
                         <Form.Group className="form-duration">
-                            <Form.Label>Duration (Mins)</Form.Label>
+                            <Form.Label>Duration</Form.Label>
                             <Form.Control
                                 type="number"
                                 value={localEvent?.duration}
