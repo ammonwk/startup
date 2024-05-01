@@ -2,6 +2,8 @@ import React from "react";
 import { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useEffect } from "react";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 function EventModal({
     showModal,
@@ -49,6 +51,15 @@ function EventModal({
         onCloseModal();
     };
 
+    const handleTimeChange = (date) => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const hourFloat = hours + minutes / 60;
+        setLocalEvent(prev => ({
+            ...prev,
+            hour: hourFloat
+        }));
+    };
 
     return (
         <Modal show={showModal} onHide={onCloseModal}>
@@ -79,6 +90,23 @@ function EventModal({
                             />
                         </Form.Group>
                     </div>
+                    {localEvent?.hour && (<Form.Group className="form-start-time">
+                        <Form.Label>Start Time</Form.Label>
+                        <DatePicker
+                            selected={new Date(new Date().setHours(
+                                Math.floor(localEvent.hour),
+                                Math.round((localEvent.hour % 1) * 60),
+                                0
+                            ))}
+                            onChange={date => handleTimeChange(date)}
+                            showTimeSelect
+                            showTimeSelectOnly
+                            timeIntervals={30}
+                            timeCaption="Time"
+                            dateFormat="h:mm aa"
+                            className="form-control"
+                        />
+                    </Form.Group>)}
                     <div className="form-row">
                         <Form.Group className="form-duration">
                             <Form.Label>Duration (Mins)</Form.Label>
