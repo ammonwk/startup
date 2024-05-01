@@ -136,7 +136,8 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         const newEvent = {
             id: newEventId,
             name: "",
-            y: `${(hour - 6) * 68}px`,
+            hour: hour,
+            // y: `${(hour - 6) * 68}px`,
             color: "#ffffff",
             duration: 30,
             date: selectedDate.format("YYYY-MM-DD"),
@@ -145,7 +146,9 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             exceptions: [],
             repeated: false,
         };
+        // console.log("Creating new event: ", newEvent)
         setEvents((prevEvents) => ({ ...prevEvents, [newEventId]: newEvent }));
+        // console.log("Events: ", events)
     };
 
     const updateEvent = (id, updatedEvent) => {
@@ -164,17 +167,17 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
         }
         setEvents(prevEvents => {
             const currentEvent = prevEvents[id];
-            const currentY = parseFloat(currentEvent.y);
+            const newHour = currentEvent.hour + dy / 68;
             const updatedEvent = {
                 ...currentEvent,
-                y: `${currentY + dy}px`,
+                hour: newHour,
                 // repeated: false,
             };
             return { ...prevEvents, [id]: updatedEvent };
         });
     };
 
-    const snapEvent = (id, newY) => {
+    const snapEvent = (id, newHour) => {
         if (movingRepeat) {
             setEditingEvent(events[id]);
             setShowRepeatModal("Edit");
@@ -184,11 +187,11 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             const currentEvent = prevEvents[id];
             const updatedEvent = {
                 ...currentEvent,
-                y: `${newY}px`,
+                hour: newHour,
             };
             return { ...prevEvents, [id]: updatedEvent };
         });
-        saveEvents({ ...events, [id]: { ...events[id], y: `${newY}px` } });
+        saveEvents({ ...events, [id]: { ...events[id], hour: newHour } });
     };
 
     async function saveEvents(updatedEvents) {

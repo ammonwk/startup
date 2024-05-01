@@ -42,9 +42,9 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             const prevDist = Math.abs(prev.getBoundingClientRect().top - eventRect.top);
             return currDist < prevDist ? curr : prev;
         });
-        if (closest) {
-            const newY = closest.offsetTop;
-            onSnapEvent(target.getAttribute('data-id'), newY);
+        if (closest) { // Snap to closest time block
+            const newHour = parseFloat(closest.getAttribute('data-time'), 10);
+            onSnapEvent(target.getAttribute('data-id'), newHour);
         }
         setTimeout(() => {
             setIsDragging(false);
@@ -64,15 +64,15 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
     const getEventColumns = (allEvents) => {
         const columns = [];
         allEvents.forEach((currentEvent) => {
-            const currentStart = parseInt(currentEvent.y, 10);
-            const currentEnd = currentStart + (currentEvent.duration * 6 / 5) - 5;
+            const currentStart = parseFloat(currentEvent.hour, 10);
+            const currentEnd = currentStart + (currentEvent.duration / 60) - 0.01; // Subtract 0.01 to prevent overlap
             let placed = false;
             for (let i = 0; i < columns.length; i++) {
                 const column = columns[i];
                 const canPlace = column.every((otherEvent) => {
-                    const otherStart = parseInt(otherEvent.y, 10);
-                    const otherEnd = otherStart + (otherEvent.duration * 6 / 5) - 5;
-                    return currentStart >= otherEnd || currentEnd <= otherStart;
+                    const otherStart = parseFloat(otherEvent.hour, 10);
+                    const otherEnd = otherStart + (otherEvent.duration / 60) - 0.01;
+                    return currentStart > otherEnd || currentEnd < otherStart;
                 });
                 if (canPlace) {
                     column.push(currentEvent);
@@ -103,13 +103,14 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
         const event_height = Math.max((event.duration * 6 / 5) - 2, 34); // Minimum height
         let eventWidth = totalColumns > 0 ? `calc((100% - 85px) / ${totalColumns})` : 'calc(100% - 85px)';
         let eventLeft = `calc(85px + ${columnIndex} * ((100% - 85px) / ${totalColumns}))`;
+        let newTop = (parseFloat(event.hour, 10) - 6) * 68;
 
         // Expanding logic based on column availability
         const canExpand = eventColumns.slice(columnIndex + 1).every(column =>
             column.every(otherEvent => {
-                const otherStart = parseInt(otherEvent.y, 10);
-                const otherEnd = otherStart + (otherEvent.duration * 6 / 5) - 5;
-                return parseInt(event.y, 10) + event_height <= otherStart || parseInt(event.y, 10) >= otherEnd;
+                const otherStart = parseFloat(otherEvent.hour, 10);
+                const otherEnd = otherStart + (otherEvent.duration / 60) - 0.01;
+                return parseFloat(event.hour, 10) + event_height < otherStart || parseFloat(event.hour, 10) >= otherEnd;
             })
         );
 
@@ -118,8 +119,14 @@ const Event = ({ event, events, onMoveEvent, onSnapEvent, onEditEvent, isDraggin
             eventWidth = `calc((${expandedColumns} * (100% - 85px)) / ${totalColumns})`;
         }
 
+        // Check if there is a block at the same time, if so, set the top to that block
+        const block = document.querySelector(`.time-block[data-time="${event.hour}"]`)
+        if (block) {
+            newTop = block.offsetTop;
+        }
+
         return {
-            top: event.y,
+            top: newTop,
             left: eventLeft,
             width: eventWidth,
             height: `${event_height}px`,
@@ -158,7 +165,7 @@ Event.propTypes = {
     event: PropTypes.shape({
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        y: PropTypes.string.isRequired,
+        hour: PropTypes.number.isRequired,
         color: PropTypes.string,
         duration: PropTypes.number.isRequired,
     }).isRequired,
@@ -166,7 +173,7 @@ Event.propTypes = {
         PropTypes.shape({
             id: PropTypes.string.isRequired,
             name: PropTypes.string.isRequired,
-            y: PropTypes.string.isRequired,
+            hour: PropTypes.number.isRequired,
             color: PropTypes.string,
             duration: PropTypes.number.isRequired,
             location: PropTypes.string,
