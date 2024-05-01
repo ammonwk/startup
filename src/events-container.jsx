@@ -139,7 +139,6 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
             id: newEventId,
             name: "",
             hour: hour,
-            // y: `${(hour - 6) * 68}px`,
             color: "#ffffff",
             duration: 30,
             date: selectedDate.format("YYYY-MM-DD"),
@@ -376,18 +375,13 @@ function EventsContainer({ selectedDate, apiEndpoint, shared, clearEventsTrigger
                     const event = importedEvents[key];
                     const newEventId = uuidv4();
                     const eventDate = event.date ? moment(event.date).format("YYYY-MM-DD") : selectedDate.format("YYYY-MM-DD");
-
-                    // Calculate the y position based on the event start time
                     const startTime = moment(event.time, "hh:mm A");
-                    const baseTime = moment("06:00", "hh:mm A");
-                    const hoursFromBase = startTime.diff(baseTime, 'hours', true);
-                    const yPosition = hoursFromBase * 68; // One hour corresponds to 68 pixels
 
                     newEvents[newEventId] = {
                         ...event,
                         id: newEventId,
                         date: eventDate,
-                        y: `${yPosition}px`, // Set the calculated y position
+                        hour: startTime.hours() + startTime.minutes() / 60,
                         color: event.color || "#ffffff",
                     };
                 });
