@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
 import { BrowserRouter, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
@@ -10,11 +10,33 @@ export function NotFound() {
 
 export function Header({ isLoggedIn, setIsLoggedIn }) {
     const navigate = useNavigate();
-    // const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    const navbarRef = useRef(null);
+    const navbarToggleRef = useRef(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const userName = localStorage.getItem('userName');
         setIsLoggedIn(!!userName);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                navbarRef.current &&
+                !navbarRef.current.contains(event.target) &&
+                !navbarToggleRef.current.contains(event.target)
+            ) {
+                const navbarCollapse = navbarRef.current.querySelector('.navbar-collapse');
+                if (navbarCollapse.classList.contains('show')) {
+                    navbarToggleRef.current.click();
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     const handleLogout = () => {
@@ -25,11 +47,19 @@ export function Header({ isLoggedIn, setIsLoggedIn }) {
 
     return (
         <header>
-            <nav className="navbar navbar-expand-sm navbar-light bg-white border-bottom mx-3 my-2">
+            <nav ref={navbarRef} className="navbar navbar-expand-sm navbar-light bg-white border-bottom mx-3 my-2">
                 <div className="container-fluid">
                     <NavLink className="navbar-brand" to="/">RM Planner</NavLink>
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <button
+                        ref={navbarToggleRef}
+                        className="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
                         <span className="navbar-toggler-icon"></span>
                     </button>
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
