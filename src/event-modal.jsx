@@ -1,9 +1,8 @@
-import React from "react";
-import { useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Modal, Button, Form, Col, Row } from "react-bootstrap";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import moment from 'moment';
 
 function EventModal({
     showModal,
@@ -11,31 +10,48 @@ function EventModal({
     onCloseModal,
     onSaveEvent,
     onDeleteEvent,
-    onEventChange,
 }) {
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();  // Prevent default form submit behavior
-                onSaveEvent();  // Trigger save event
-                onCloseModal();  // Close the modal after saving
-            } else if (event.key === 'Escape') {
-                onCloseModal();  // Close the modal on escape key
-            }
-        };
-        if (showModal) {
-            document.addEventListener('keydown', handleKeyDown);
-        }
-        // Cleanup listener when component unmounts or modal is closed
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [showModal, onSaveEvent, onCloseModal]);
-
     const [localEvent, setLocalEvent] = useState({ ...editingEvent });
+    const [startTime, setStartTime] = useState(new Date());
+    const [customRepeatType, setCustomRepeatType] = useState('days');
+    const [customRepeatInterval, setCustomRepeatInterval] = useState(1);
+    const [customRepeatDays, setCustomRepeatDays] = useState([]);
+    const [customRepeatMonthly, setCustomRepeatMonthly] = useState('date');
+    const [customRepeatWeekday, setCustomRepeatWeekday] = useState('');
+    const [customRepeatWeekdayOccurrence, setCustomRepeatWeekdayOccurrence] = useState('1');
 
     useEffect(() => {
-        setLocalEvent({ ...editingEvent }); // Update local state when editingEvent changes
+        if (editingEvent) {
+            setLocalEvent({ ...editingEvent });
+            const hours = Math.floor(editingEvent.hour);
+            const minutes = Math.round((editingEvent.hour % 1) * 60);
+            const newStartTime = new Date();
+            newStartTime.setHours(hours, minutes, 0, 0);
+            setStartTime(newStartTime);
+
+            if (editingEvent.customRepeat) {
+                setCustomRepeatType(editingEvent.customRepeat.type);
+                setCustomRepeatInterval(editingEvent.customRepeat.interval);
+                setCustomRepeatDays(editingEvent.customRepeat.days || []);
+                setCustomRepeatMonthly(editingEvent.customRepeat.monthlyType || 'date');
+                setCustomRepeatWeekday(editingEvent.customRepeat.weekday || '');
+                setCustomRepeatWeekdayOccurrence(editingEvent.customRepeat.weekdayOccurrence || '');
+            }
+        } else {
+            setLocalEvent({
+                name: "",
+                hour: 9,
+                duration: 30,
+                color: "#000000",
+                repeat: "",
+                endDate: "",
+                location: "",
+                notes: "",
+            });
+            const newStartTime = new Date();
+            newStartTime.setHours(9, 0, 0, 0);
+            setStartTime(newStartTime);
+        }
     }, [editingEvent]);
 
     const handleLocalEventChange = (e) => {
@@ -47,39 +63,94 @@ function EventModal({
     };
 
     const handleSave = () => {
-        onSaveEvent(localEvent); // Pass the local state to save function
+        const updatedEvent = {
+            ...localEvent,
+            hour: startTime.getHours() + startTime.getMinutes() / 60,
+            customRepeat: localEvent.repeat === 'custom' ? {
+                type: customRepeatType,
+                interval: customRepeatInterval,
+                days: customRepeatDays,
+                monthlyType: customRepeatMonthly,
+                weekday: customRepeatWeekday,
+                weekdayOccurrence: customRepeatWeekdayOccurrence,
+            } : null,
+        };
+        onSaveEvent(updatedEvent);
         onCloseModal();
     };
 
     const handleStartTimeChange = (date) => {
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const hourFloat = hours + minutes / 60;
-        setLocalEvent(prev => ({
-            ...prev,
-            hour: hourFloat
-        }));
+        setStartTime(date);
+    };
+
+    const handleCustomRepeatDayToggle = (day) => {
+        setCustomRepeatDays(prev =>
+            prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+        );
+    };
+
+    const getRepeatDescription = () => {
+        const startDate = moment(startTime);
+        switch (localEvent.repeat) {
+            case 'daily':
+                return 'every day';
+            case 'weekly':
+                return `every ${startDate.format('dddd')}`;
+            case 'monthly':
+                return `on the ${startDate.format('Do')} of every month`;
+            case 'yearly':
+                return `every ${startDate.format('MMMM Do')}`;
+            case 'custom':
+                return getCustomRepeatDescription();
+            default:
+                return '';
+        }
+    };
+
+    const getCustomRepeatDescription = () => {
+        const interval = customRepeatInterval > 1 ? `${customRepeatInterval} ` : '';
+        switch (customRepeatType) {
+            case 'days':
+                return `every ${interval}day${customRepeatInterval > 1 ? 's' : ''}`;
+            case 'weeks':
+                if (customRepeatDays.length === 0) return `every ${interval}week${interval > 1 ? 's' : ''}`;
+                const days = customRepeatDays.map(d => moment().day(d).format('dddd'));
+                const formattedDays = days.length > 1
+                    ? days.slice(0, -1).join(', ') + (days.length > 2 ? ',' : '') + ' and ' + days.slice(-1)
+                    : days[0];
+                return `every ${interval}week${interval > 1 ? 's' : ''} on ${formattedDays}`;
+            case 'months':
+                if (customRepeatMonthly === 'date') {
+                    return `on the ${moment(startTime).format('Do')} every ${interval}month${customRepeatInterval > 1 ? 's' : ''}`;
+                } else {
+                    const occurrence = ['first', 'second', 'third', 'fourth', 'last'][parseInt(customRepeatWeekdayOccurrence) - 1];
+                    const weekday = moment().day(customRepeatWeekday).format('dddd');
+                    return `on the ${occurrence} ${weekday} every ${interval}month${customRepeatInterval > 1 ? 's' : ''}`;
+                }
+            case 'years':
+                return `every ${interval}year${customRepeatInterval > 1 ? 's' : ''} on ${moment(startTime).format('MMMM Do')}`;
+            default:
+                return '';
+        }
     };
 
     const handleEndTimeChange = (date) => {
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const hourFloat = hours + minutes / 60;
+        const durationMinutes = (date.getHours() * 60 + date.getMinutes()) - (startTime.getHours() * 60 + startTime.getMinutes());
         setLocalEvent(prev => ({
             ...prev,
-            duration: (hourFloat - prev.hour) * 60
+            duration: durationMinutes
         }));
-    }
+    };
 
     return (
-        <Modal show={showModal} onHide={onCloseModal}>
+        <Modal show={showModal} onHide={onCloseModal} size="lg">
             <Modal.Header closeButton>
-                <Modal.Title>Edit Event</Modal.Title>
+                <Modal.Title>{editingEvent ? 'Edit Event' : 'Create Event'}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
                     <div className="form-row">
-                        <Form.Group className="form-name">
+                        <Form.Group className="form-flex-1">
                             <Form.Label>Event Name</Form.Label>
                             <Form.Control
                                 type="text"
@@ -90,7 +161,7 @@ function EventModal({
                                 placeholder="Name of Event"
                             />
                         </Form.Group>
-                        <Form.Group className="form-color">
+                        <Form.Group className="form-flex-0">
                             <Form.Label>Color</Form.Label>
                             <Form.Control
                                 type="color"
@@ -119,7 +190,7 @@ function EventModal({
                     </Form.Group>)}
                     <div className="form-row">
                         {localEvent?.hour && (
-                            <Form.Group className="form-end-time">
+                            <Form.Group className="form-flex-1">
                                 <Form.Label>End Time</Form.Label>
                                 <DatePicker
                                     selected={new Date(new Date().setHours(
@@ -137,7 +208,7 @@ function EventModal({
                                 />
                             </Form.Group>
                         )}
-                        <Form.Group className="form-duration">
+                        <Form.Group className="form-flex-0">
                             <Form.Label>Duration</Form.Label>
                             <Form.Control
                                 type="number"
@@ -149,15 +220,144 @@ function EventModal({
                             />
                         </Form.Group>
                     </div>
+
+                    <Form.Group>
+                        <Form.Label>Repeat: {getRepeatDescription()}</Form.Label>
+                        <Form.Control
+                            as="select"
+                            name="repeat"
+                            value={localEvent?.repeat || ""}
+                            onChange={handleLocalEventChange}
+                        >
+                            <option value="">Do not repeat</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                            <option value="custom">Custom</option>
+                        </Form.Control>
+                        {/* <Form.Text className="text-muted">
+                            {getRepeatDescription()}
+                        </Form.Text> */}
+                    </Form.Group>
+
+                    {localEvent?.repeat === 'custom' && (
+                        <>
+                            <Form.Group>
+                                <Form.Label>Repeat every</Form.Label>
+                                <Row>
+                                    <Col xs={3}>
+                                        <Form.Control
+                                            type="number"
+                                            value={customRepeatInterval}
+                                            onChange={(e) => setCustomRepeatInterval(parseInt(e.target.value))}
+                                            min="1"
+                                        />
+                                    </Col>
+                                    <Col xs={9}>
+                                        <Form.Control
+                                            as="select"
+                                            value={customRepeatType}
+                                            onChange={(e) => setCustomRepeatType(e.target.value)}
+                                        >
+                                            <option value="days">Day(s)</option>
+                                            <option value="weeks">Week(s)</option>
+                                            <option value="months">Month(s)</option>
+                                            <option value="years">Year(s)</option>
+                                        </Form.Control>
+                                    </Col>
+                                </Row>
+                            </Form.Group>
+
+                            {customRepeatType === 'weeks' && (
+                                <Form.Group>
+                                    <Form.Label>Repeat on</Form.Label>
+                                    <div>
+                                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                                            <Form.Check
+                                                inline
+                                                key={day}
+                                                type="checkbox"
+                                                id={`repeat-day-${index}`}
+                                                label={day}
+                                                checked={customRepeatDays.includes(index)}
+                                                onChange={() => handleCustomRepeatDayToggle(index)}
+                                            />
+                                        ))}
+                                    </div>
+                                </Form.Group>
+                            )}
+
+                            {customRepeatType === 'months' && (
+                                <Form.Group>
+                                    <Form.Label>Repeat on</Form.Label>
+                                    <Form.Check
+                                        type="radio"
+                                        label={`On day ${moment(startTime).format('Do')} of every month`}
+                                        name="monthlyRepeatType"
+                                        checked={customRepeatMonthly === 'date'}
+                                        onChange={() => setCustomRepeatMonthly('date')}
+                                    />
+                                    <Form.Check
+                                        type="radio"
+                                        label="On a specific day of the week"
+                                        name="monthlyRepeatType"
+                                        checked={customRepeatMonthly === 'day'}
+                                        onChange={() => setCustomRepeatMonthly('day')}
+                                    />
+                                    {customRepeatMonthly === 'day' && (
+                                        <Row className="mt-2">
+                                            <Col>
+                                                <Form.Control
+                                                    as="select"
+                                                    value={customRepeatWeekdayOccurrence}
+                                                    onChange={(e) => setCustomRepeatWeekdayOccurrence(e.target.value)}
+                                                >
+                                                    <option value="1">First</option>
+                                                    <option value="2">Second</option>
+                                                    <option value="3">Third</option>
+                                                    <option value="4">Fourth</option>
+                                                    <option value="-1">Last</option>
+                                                </Form.Control>
+                                            </Col>
+                                            <Col>
+                                                <Form.Control
+                                                    as="select"
+                                                    value={customRepeatWeekday}
+                                                    onChange={(e) => setCustomRepeatWeekday(e.target.value)}
+                                                >
+                                                    {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                                                        <option key={day} value={index}>{day}</option>
+                                                    ))}
+                                                </Form.Control>
+                                            </Col>
+                                        </Row>
+                                    )}
+                                </Form.Group>
+                            )}
+                        </>
+                    )}
+
+                    {localEvent?.repeat && (
+                        <Form.Group>
+                            <Form.Label>End Repeat</Form.Label>
+                            <Form.Control
+                                type="date"
+                                name="endDate"
+                                value={localEvent?.endDate || ""}
+                                onChange={handleLocalEventChange}
+                            />
+                        </Form.Group>
+                    )}
+
                     <Form.Group>
                         <Form.Label>Location</Form.Label>
                         <Form.Control
-                            as="textarea"
-                            rows={1}
+                            type="text"
+                            name="location"
                             value={localEvent?.location || ""}
                             onChange={handleLocalEventChange}
-                            name="location"
-                            placeholder="Event Location"
+                            placeholder="Enter event location"
                         />
                     </Form.Group>
                     <Form.Group>
@@ -165,56 +365,23 @@ function EventModal({
                         <Form.Control
                             as="textarea"
                             rows={3}
+                            name="notes"
                             value={localEvent?.notes || ""}
                             onChange={handleLocalEventChange}
-                            name="notes"
-                            placeholder="Enter any notes or additional information"
+                            placeholder="Enter any additional notes"
                         />
                     </Form.Group>
-                    <Form.Group>
-                        <Form.Label>Repeat</Form.Label>
-                        <Form.Control
-                            as="select"
-                            value={localEvent?.repeat || ""}
-                            onChange={handleLocalEventChange}
-                            name="repeat"
-                        >
-                            <option value="">None</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                            <option value="custom">Custom</option>
-                        </Form.Control>
-                    </Form.Group>
-
-                    {localEvent?.repeat && (
-                        <Form.Group>
-                            <Form.Label>Repeat End Date</Form.Label>
-                            <Form.Control
-                                type="date"
-                                value={localEvent?.endDate || ""}
-                                onChange={handleLocalEventChange}
-                                name="endDate"
-                            />
-                        </Form.Group>
-                    )}
-
-                    {localEvent?.repeat === "custom" && (
-                        <Form.Group>
-                            <Form.Label>Custom Repeat Pattern</Form.Label>
-                            {/* Add form fields for custom repetition pattern */}
-                        </Form.Group>
-                    )}
                 </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onCloseModal}>
-                    Close
+                    Cancel
                 </Button>
-                <Button variant="danger" onClick={onDeleteEvent}>
-                    Delete
-                </Button>
+                {editingEvent && (
+                    <Button variant="danger" onClick={onDeleteEvent}>
+                        Delete
+                    </Button>
+                )}
                 <Button variant="primary" onClick={handleSave}>
                     Save
                 </Button>
@@ -222,4 +389,5 @@ function EventModal({
         </Modal>
     );
 }
+
 export default EventModal;

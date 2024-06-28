@@ -4,18 +4,21 @@ The vision:
 
 Checkpoint 1: Core Functionality
 - [ ] Convert it to a PWA so you can deploy it both as a website and an app
+- [ ] Implement custom repeat rules (Every Monday/Wednesday/Friday, etc.)
 - [ ] Swiping to change the day on mobile
 - [ ] Drag events between days
 - [ ] Hold down on events a moment before being able to drag them with touch
 - [ ] Import from image
-  - [ ] Switch to Haiku if possible
-  - [ ] Improve it with an internal monologue
+  - [ ] Switch to newer LLM models
+  - [ ] Improve it with an internal monologue?
   - [ ] Make the human confirmation dialogue box easier to understand
   - [ ] progress bar should show "Uploading" and then "Analyzing"
 
 Checkpoint 2: User Experience and Settings
 - [ ] Change formatting/layout to make it look like Areabook
-- [ ] Improve color picking
+- [ ] Improve color picking (Add event categories?)
+- [ ] Implement notifications (Custom times and reminder messages)
+- [ ] Possibly: Button to duplicate event?
 - [ ] Search for event
     - [ ] Optional/future: search tools: search name, description, regex?
 - [ ] Settings
@@ -55,6 +58,8 @@ Checkpoint 4: Import and Export
   - [ ] And automatically sync with phone/Google/other calendars (live)
 
 Checkpoint 5: Websocket and Real-time Updates
+- [ ] Implement shared events
+- [ ] Implement shared calendars
 - [ ] Automatically update events like the Shared calendar
   - [ ] (Worth the processing power?)
 - [ ] Edge Case: Events edited offline & online at once
@@ -98,5 +103,7 @@ Checkpoint 9: Extra Credit and Future Enhancements
     - [ ] Budgeting
     - [ ] Goals
     - [ ] Time tracker (for work/projects)
+    - [ ] Countdown/up timers
     - [ ] Map
     - [ ] Dating
+    - [ ] Other people tracking features (Medical, etc.?)
